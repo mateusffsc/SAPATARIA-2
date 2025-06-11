@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { formatCPF, formatPhone, formatZipCode, formatCNPJ, cleanNumericValue } from '../../utils/inputFormatters';
 
 interface FormInputProps {
-  type?: 'text' | 'email' | 'tel' | 'cpf' | 'phone' | 'zipcode' | 'cnpj' | 'number';
+  type?: 'text' | 'email' | 'tel' | 'cpf' | 'phone' | 'zipcode' | 'cnpj' | 'number' | 'password';
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -108,6 +108,8 @@ const FormInput: React.FC<FormInputProps> = ({
         return 'tel'; // Use tel for numeric inputs on mobile
       case 'number':
         return 'number';
+      case 'password':
+        return 'password';
       default:
         return type;
     }

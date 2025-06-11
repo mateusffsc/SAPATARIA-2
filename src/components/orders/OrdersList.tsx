@@ -550,7 +550,7 @@ const OrdersList: React.FC = () => {
                           <option value="orçamento">Orçamento</option>
                         </select>
                       ) : (
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                           {getStatusIcon(order.status)}
                           <span className="ml-1 capitalize">{order.status.replace('-', ' ')}</span>
                         </span>

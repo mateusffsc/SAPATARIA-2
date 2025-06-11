@@ -230,6 +230,7 @@ const Sidebar: React.FC = () => {
           z-40 lg:z-0
           overflow-hidden
           flex flex-col
+          sidebar-transition
         `}
       >
         <div className={`flex-none p-4 border-b border-gray-700 flex items-center justify-between ${

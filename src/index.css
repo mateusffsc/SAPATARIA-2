@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.os-link {
+  @apply text-blue-600 font-bold hover:text-blue-800 hover:underline cursor-pointer transition-colors;
+}
+
+/* Mobile-first responsive design improvements */
+@layer base {
+  /* Ensure minimum touch target sizes */
+  button, 
+  input[type="button"], 
+  input[type="submit"], 
+  input[type="reset"],
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Improve form inputs on mobile */
+  input, 
+  textarea, 
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Better focus indicators for accessibility */
+  input:focus,
+  textarea:focus,
+  select:focus,
+  button:focus {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+  }
+
+  /* Prevent horizontal scroll on small screens */
+  html, body {
+    overflow-x: hidden;
+  }
+
+  /* Improve table responsiveness */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Better spacing for mobile */
+  @media (max-width: 640px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+}
+
+@layer components {
+  /* Mobile-optimized button styles */
+  .btn-mobile {
+    @apply min-h-[44px] px-4 py-3 text-base font-medium rounded-lg transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply active:scale-95 transform;
+  }
+
+  /* Mobile-optimized input styles */
+  .input-mobile {
+    @apply min-h-[44px] px-4 py-3 text-base border rounded-lg;
+    @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    @apply transition-colors;
+  }
+
+  /* Mobile-friendly modal styles */
+  .modal-mobile {
+    @apply fixed inset-0 z-50 overflow-auto;
+    @apply bg-black bg-opacity-50;
+    @apply flex items-center justify-center p-4;
+  }
+
+  /* Responsive grid improvements */
+  .grid-responsive {
+    @apply grid gap-4;
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  /* Better card layouts for mobile */
+  .card-mobile {
+    @apply bg-white rounded-lg shadow p-4;
+    @apply hover:shadow-md transition-shadow;
+  }
+
+  /* Improved spacing for mobile */
+  .space-mobile {
+    @apply space-y-4 sm:space-y-6;
+  }
+
+  /* Mobile-optimized table styles */
+  .table-mobile {
+    @apply w-full overflow-x-auto;
+  }
+
+  .table-mobile table {
+    @apply min-w-full;
+  }
+
+  .table-mobile th,
+  .table-mobile td {
+    @apply px-3 py-2 text-sm;
+  }
+
+  @media (min-width: 768px) {
+    .table-mobile th,
+    .table-mobile td {
+      @apply px-6 py-4 text-base;
+    }
+  }
+}
+
+/* Custom scrollbar for better mobile experience */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Improve touch scrolling on iOS */
+.scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Better focus styles for mobile */
+.focus-visible:focus {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+/* Prevent text selection on buttons */
+button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Improve tap targets */
+.tap-target {
+  position: relative;
+}
+
+.tap-target::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  z-index: -1;
+}
+
+/* Better mobile typography */
+@media (max-width: 640px) {
+  h1 {
+    @apply text-xl;
+  }
+  
+  h2 {
+    @apply text-lg;
+  }
+  
+  h3 {
+    @apply text-base;
+  }
+}

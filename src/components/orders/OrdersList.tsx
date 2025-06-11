@@ -217,15 +217,13 @@ const OrdersList: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <h1 className="text-2xl font-bold text-gray-900">Ordens de Serviço</h1>
         <div className="flex space-x-4">
-          {hasPermission('products.manage') && (
-            <button
-              onClick={() => setShowProductSaleModal(true)}
-              className="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-700 transition-colors"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>Vender Produto</span>
-            </button>
-          )}
+          <button
+            onClick={() => setShowProductSaleModal(true)}
+            className="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-700 transition-colors"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span>Vender Produto</span>
+          </button>
           {hasPermission('orders.create') && (
             <button
               onClick={() => openModal('order')}

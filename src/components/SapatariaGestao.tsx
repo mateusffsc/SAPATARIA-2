@@ -135,7 +135,7 @@ const SapatariaGestao: React.FC = () => {
       case 'orders':
         return hasPermission('orders.view');
       case 'product-sales':
-        return hasPermission('products.view');
+        return true; // Allow all users to access product sales view
       case 'credit':
         return true; // Allow all users to access credit view
       case 'clients':
@@ -277,7 +277,7 @@ const SapatariaGestao: React.FC = () => {
       {showModal && modalType === 'whatsapp' && <WhatsAppModal />}
       {/* Allow all users to create transactions */}
       {showModal && modalType === 'transaction' && <TransactionModal />}
-      {showModal && modalType === 'product-sale' && hasPermission('products.manage') && <ProductSaleModal onClose={() => setShowModal(false)} onSave={() => {}} />}
+      {showModal && modalType === 'product-sale' && <ProductSaleModal onClose={() => setShowModal(false)} onSave={() => {}} />}
       {showModal && modalType === 'view-sale' && <ProductSaleViewModal />}
       {showModal && modalType === 'view-bill' && <BillViewModal />}
 

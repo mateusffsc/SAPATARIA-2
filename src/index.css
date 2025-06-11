@@ -37,6 +37,9 @@
   /* Prevent horizontal scroll on small screens */
   html, body {
     overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    height: 100%;
   }
 
   /* Improve table responsiveness */
@@ -183,4 +186,19 @@ button {
   h3 {
     @apply text-base;
   }
+}
+
+/* Fix for mobile menu */
+.sidebar-open {
+  overflow: hidden;
+}
+
+/* Sidebar transition fixes */
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Ensure content doesn't shift when scrollbar appears */
+html {
+  scrollbar-gutter: stable;
 }

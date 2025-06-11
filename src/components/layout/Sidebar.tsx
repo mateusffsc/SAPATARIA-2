@@ -25,7 +25,7 @@ const Sidebar: React.FC = () => {
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['cadastros']);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Fecha o menu quando a tela for redimensionada para desktop
+  // Close menu when screen is resized to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) { // lg breakpoint
@@ -37,19 +37,19 @@ const Sidebar: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Previne scroll do body quando o menu móvel estiver aberto
+  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, [isMobileMenuOpen]);
 
-  // Salva o estado do menu no localStorage
+  // Save sidebar state to localStorage
   useEffect(() => {
     const savedCollapsedState = localStorage.getItem('sidebarCollapsed');
     if (savedCollapsedState !== null) {
@@ -69,7 +69,7 @@ const Sidebar: React.FC = () => {
     { id: 'clients', name: 'Clientes', icon: Users, section: 'main' as const, permission: 'clients.view' },
     { id: 'technicians', name: 'Técnicos', icon: Wrench, section: 'main' as const, permission: 'technicians.view' },
     { id: 'orders', name: 'Ordens de Serviço', icon: FileText, section: 'main' as const, permission: 'orders.view' },
-    { id: 'product-sales', name: 'Vendas de Produtos', icon: ShoppingCart, section: 'main' as const, permission: 'products.view' },
+    { id: 'product-sales', name: 'Vendas de Produtos', icon: ShoppingCart, section: 'main' as const },
     { id: 'credit', name: 'Crediário', icon: Clock, section: 'main' as const }, // No permission required for credit
     
     // Financial section based on role
@@ -208,6 +208,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
+      {/* Mobile menu button - always visible on mobile */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors"
@@ -216,6 +217,7 @@ const Sidebar: React.FC = () => {
         {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
+      {/* Sidebar */}
       <aside
         className={`
           fixed lg:sticky top-0 left-0 h-screen
@@ -271,7 +273,7 @@ const Sidebar: React.FC = () => {
         </nav>
       </aside>
 
-      {/* Overlay para dispositivos móveis */}
+      {/* Overlay for mobile */}
       {isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden backdrop-blur-sm"

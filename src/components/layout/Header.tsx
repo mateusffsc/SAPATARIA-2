@@ -1,16 +1,19 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
+import { useAppContext } from '../../context/AppContext';
 
 const Header: React.FC = () => {
   const { currentUser, logout } = useAuth();
+  const { setCurrentView } = useAppContext();
 
   const formatRole = (role: string) => {
     switch (role) {
       case 'admin': return 'Administrador';
       case 'manager': return 'Gerente';
-      case 'employee': return 'Funcionário';
+      case 'attendant': return 'Atendente';
       case 'technician': return 'Técnico';
+      case 'financial_low': return 'Financeiro';
       default: return role;
     }
   };

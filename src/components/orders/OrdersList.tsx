@@ -17,7 +17,7 @@ interface RefundData {
 }
 
 const OrdersList: React.FC = () => {
-  const { orders, setOrders, setModalType, setFormData, setShowModal } = useAppContext();
+  const { orders, setOrders, setModalType, setFormData, setShowModal, clients } = useAppContext();
   const { hasPermission } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -29,14 +29,19 @@ const OrdersList: React.FC = () => {
   const [showCancelConfirm, setShowCancelConfirm] = useState<number | null>(null);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   
-  // Enhanced filtering with search highlighting
+  // Enhanced filtering with search highlighting and CPF search
   const filteredOrders = orders.filter(order => {
+    // Find client to check CPF
+    const client = clients.find(c => c.id === order.clientId);
+    const clientCpf = client?.cpf || '';
+    
     const matchesSearch = !searchTerm || 
       order.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.serialNumber && order.serialNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
       order.article.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.brand.toLowerCase().includes(searchTerm.toLowerCase());
+      order.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      clientCpf.includes(searchTerm); // Search by CPF
     
     const matchesStatus = !statusFilter || order.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -212,6 +217,12 @@ const OrdersList: React.FC = () => {
     }
   };
 
+  // Get client CPF for display
+  const getClientCpf = (clientId: number) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.cpf || '';
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
@@ -244,7 +255,7 @@ const OrdersList: React.FC = () => {
               <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
               <input
                 type="text"
-                placeholder="Buscar por cliente, número da OS, série, artigo..."
+                placeholder="Buscar por cliente, CPF, número da OS, série, artigo..."
                 className="pl-10 pr-10 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
@@ -310,6 +321,7 @@ const OrdersList: React.FC = () => {
       <div className="block lg:hidden space-y-4">
         {filteredOrders.map(order => {
           const priority = getPriorityIndicator(order);
+          const clientCpf = getClientCpf(order.clientId);
           
           return (
             <div 
@@ -327,6 +339,15 @@ const OrdersList: React.FC = () => {
                       }} />
                     ) : (
                       order.client
+                    )}
+                    {clientCpf && (
+                      <span className="ml-1 text-xs text-gray-500">
+                        ({searchTerm && clientCpf.includes(searchTerm) ? (
+                          <span dangerouslySetInnerHTML={{ 
+                            __html: highlightSearchTerm(clientCpf, searchTerm) 
+                          }} />
+                        ) : clientCpf})
+                      </span>
                     )}
                   </p>
                   {priority.label && (
@@ -465,6 +486,7 @@ const OrdersList: React.FC = () => {
                   OS {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CPF</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Artigo</th>
                 <th 
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
@@ -491,6 +513,7 @@ const OrdersList: React.FC = () => {
             <tbody className="divide-y divide-gray-200">
               {filteredOrders.map(order => {
                 const priority = getPriorityIndicator(order);
+                const clientCpf = getClientCpf(order.clientId);
                 
                 return (
                   <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${priority.color}`}>
@@ -507,6 +530,15 @@ const OrdersList: React.FC = () => {
                         }} />
                       ) : (
                         order.client
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {searchTerm && clientCpf.includes(searchTerm) ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerm(clientCpf, searchTerm) 
+                        }} />
+                      ) : (
+                        clientCpf
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -621,7 +653,7 @@ const OrdersList: React.FC = () => {
               })}
               {filteredOrders.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
                     {searchTerm ? (
                       <div>
                         <p>Nenhuma ordem encontrada para "{searchTerm}"</p>

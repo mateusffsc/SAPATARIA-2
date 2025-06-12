@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { Search, Plus, Eye, Edit, DollarSign, Package, Calendar, User, ShoppingBag } from 'lucide-react';
-import { formatCurrency, formatRelativeDate } from '../../utils/formatters';
+import { Search, Plus, Eye, Edit, DollarSign, Package, Calendar, User, ShoppingBag, X } from 'lucide-react';
+import { formatCurrency, formatRelativeDate, highlightSearchTerm } from '../../utils/formatters';
 import { ProductSaleService } from '../../services/productSaleService';
 import { ProductSale } from '../../types';
 import { useToast } from '../shared/ToastContainer';
@@ -43,9 +43,14 @@ const ProductSalesView: React.FC = () => {
   };
 
   const filteredSales = productSales.filter(sale => {
+    // Find client to check CPF
+    const client = clients.find(c => c.id === sale.clientId);
+    const clientCpf = client?.cpf || '';
+    
     const matchesSearch = !searchTerm || 
       sale.saleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       sale.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      clientCpf.includes(searchTerm) || // Search by CPF
       sale.items.some(item => item.productName.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = !statusFilter || sale.status === statusFilter;
@@ -70,6 +75,16 @@ const ProductSalesView: React.FC = () => {
     setModalType('product-sale');
     setFormData({});
     setShowModal(true);
+  };
+
+  // Get client CPF for display
+  const getClientCpf = (clientId: number) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.cpf || '';
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
   };
 
   if (loading) {
@@ -144,11 +159,19 @@ const ProductSalesView: React.FC = () => {
               <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
               <input
                 type="text"
-                placeholder="Buscar por número da venda, cliente ou produto..."
+                placeholder="Buscar por número da venda, cliente, CPF ou produto..."
                 className="pl-10 pr-4 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+              {searchTerm && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
           <div className="w-full sm:w-48">
@@ -163,53 +186,104 @@ const ProductSalesView: React.FC = () => {
             </select>
           </div>
         </div>
+        
+        {/* Search Results Summary */}
+        <div className="mt-2 text-sm text-gray-600">
+          {searchTerm && (
+            <span>
+              {filteredSales.length} resultado(s) para "{searchTerm}"
+            </span>
+          )}
+          {!searchTerm && (
+            <span>{filteredSales.length} vendas</span>
+          )}
+        </div>
       </div>
 
       {/* Mobile Cards View */}
       <div className="block lg:hidden space-y-4">
-        {filteredSales.map(sale => (
-          <div 
-            key={sale.id}
-            className="bg-white rounded-lg shadow p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => openSaleModal(sale)}
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-blue-600">{sale.saleNumber}</h3>
-                <p className="text-sm text-gray-600 mt-1">{sale.clientName}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Data</p>
-                <p className="font-medium">{formatRelativeDate(sale.date)}</p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-600">Produtos</p>
-              <div className="space-y-1">
-                {sale.items.map((item, index) => (
-                  <p key={index} className="text-sm">
-                    {item.quantity}x {item.productName} - {formatCurrency(item.totalPrice)}
+        {filteredSales.map(sale => {
+          const clientCpf = getClientCpf(sale.clientId);
+          
+          return (
+            <div 
+              key={sale.id}
+              className="bg-white rounded-lg shadow p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => openSaleModal(sale)}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-blue-600">{sale.saleNumber}</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {searchTerm ? (
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: highlightSearchTerm(sale.clientName, searchTerm) 
+                      }} />
+                    ) : (
+                      sale.clientName
+                    )}
+                    {clientCpf && (
+                      <span className="ml-1 text-xs text-gray-500">
+                        ({searchTerm && clientCpf.includes(searchTerm) ? (
+                          <span dangerouslySetInnerHTML={{ 
+                            __html: highlightSearchTerm(clientCpf, searchTerm) 
+                          }} />
+                        ) : clientCpf})
+                      </span>
+                    )}
                   </p>
-                ))}
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">Data</p>
+                  <p className="font-medium">{formatRelativeDate(sale.date)}</p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex justify-between items-center pt-2 border-t">
               <div>
-                <p className="text-sm text-gray-600">Total</p>
-                <p className="font-bold text-green-600">{formatCurrency(sale.totalAmount)}</p>
+                <p className="text-sm text-gray-600">Produtos</p>
+                <div className="space-y-1">
+                  {sale.items.map((item, index) => (
+                    <p key={index} className="text-sm">
+                      {item.quantity}x {
+                        searchTerm && item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ? (
+                          <span dangerouslySetInnerHTML={{ 
+                            __html: highlightSearchTerm(item.productName, searchTerm) 
+                          }} />
+                        ) : item.productName
+                      } - {formatCurrency(item.totalPrice)}
+                    </p>
+                  ))}
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Pagamento</p>
-                <p className="text-sm font-medium">{sale.paymentMethod}</p>
+
+              <div className="flex justify-between items-center pt-2 border-t">
+                <div>
+                  <p className="text-sm text-gray-600">Total</p>
+                  <p className="font-bold text-green-600">{formatCurrency(sale.totalAmount)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">Pagamento</p>
+                  <p className="text-sm font-medium">{sale.paymentMethod}</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {filteredSales.length === 0 && (
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            Nenhuma venda encontrada
+            {searchTerm ? (
+              <div>
+                <p>Nenhuma venda encontrada para "{searchTerm}"</p>
+                <button
+                  onClick={clearSearch}
+                  className="mt-2 text-blue-600 hover:text-blue-800"
+                >
+                  Limpar busca
+                </button>
+              </div>
+            ) : (
+              'Nenhuma venda encontrada'
+            )}
           </div>
         )}
       </div>
@@ -222,6 +296,7 @@ const ProductSalesView: React.FC = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venda</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CPF</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produtos</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -231,58 +306,97 @@ const ProductSalesView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredSales.map(sale => (
-                <tr key={sale.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-blue-600">{sale.saleNumber}</div>
-                  </td>
-                  <td className="px-6 py-4 font-medium">{sale.clientName}</td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      {sale.items.map((item, index) => (
-                        <div key={index} className="text-sm">
-                          {item.quantity}x {item.productName}
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div>
-                      <div>{new Date(sale.date).toLocaleDateString()}</div>
-                      <div className="text-xs text-gray-500">{formatRelativeDate(sale.date)}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-bold text-green-600">
-                    {formatCurrency(sale.totalAmount)}
-                  </td>
-                  <td className="px-6 py-4">{sale.paymentMethod}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      sale.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {sale.status === 'completed' ? 'Concluída' : 'Cancelada'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openSaleModal(sale);
-                        }}
-                        className="text-blue-600 hover:text-blue-800 transition-colors"
-                        title="Ver detalhes"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredSales.map(sale => {
+                const clientCpf = getClientCpf(sale.clientId);
+                
+                return (
+                  <tr key={sale.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-blue-600">{sale.saleNumber}</div>
+                    </td>
+                    <td className="px-6 py-4 font-medium">
+                      {searchTerm ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerm(sale.clientName, searchTerm) 
+                        }} />
+                      ) : (
+                        sale.clientName
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {searchTerm && clientCpf.includes(searchTerm) ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerm(clientCpf, searchTerm) 
+                        }} />
+                      ) : (
+                        clientCpf
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        {sale.items.map((item, index) => (
+                          <div key={index} className="text-sm">
+                            {item.quantity}x {
+                              searchTerm && item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ? (
+                                <span dangerouslySetInnerHTML={{ 
+                                  __html: highlightSearchTerm(item.productName, searchTerm) 
+                                }} />
+                              ) : item.productName
+                            }
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div>
+                        <div>{new Date(sale.date).toLocaleDateString()}</div>
+                        <div className="text-xs text-gray-500">{formatRelativeDate(sale.date)}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-bold text-green-600">
+                      {formatCurrency(sale.totalAmount)}
+                    </td>
+                    <td className="px-6 py-4">{sale.paymentMethod}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        sale.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {sale.status === 'completed' ? 'Concluída' : 'Cancelada'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openSaleModal(sale);
+                          }}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                          title="Ver detalhes"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
               {filteredSales.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                    Nenhuma venda encontrada
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                    {searchTerm ? (
+                      <div>
+                        <p>Nenhuma venda encontrada para "{searchTerm}"</p>
+                        <button
+                          onClick={clearSearch}
+                          className="mt-2 text-blue-600 hover:text-blue-800"
+                        >
+                          Limpar busca
+                        </button>
+                      </div>
+                    ) : (
+                      'Nenhuma venda encontrada'
+                    )}
                   </td>
                 </tr>
               )}

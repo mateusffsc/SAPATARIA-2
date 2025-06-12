@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { Search, Users, Trash2, Phone, Mail, MapPin, Plus } from 'lucide-react';
+import { Search, Users, Trash2, Phone, Mail, MapPin, Plus, X } from 'lucide-react';
 
 const ClientsView: React.FC = () => {
   const { clients, setClients, orders, setOrders, setModalType, setFormData, setShowModal } = useAppContext();
@@ -49,6 +49,10 @@ const ClientsView: React.FC = () => {
     setShowModal(true);
   };
 
+  const clearSearch = () => {
+    setSearchTerm('');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
@@ -69,10 +73,30 @@ const ClientsView: React.FC = () => {
           <input
             type="text"
             placeholder="Buscar por nome, CPF ou telefone..."
-            className="pl-10 pr-4 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="pl-10 pr-10 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {searchTerm && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        
+        {/* Search Results Summary */}
+        <div className="mt-2 text-sm text-gray-600">
+          {searchTerm && (
+            <span>
+              {filteredClients.length} resultado(s) para "{searchTerm}"
+            </span>
+          )}
+          {!searchTerm && (
+            <span>{filteredClients.length} clientes</span>
+          )}
         </div>
       </div>
 
@@ -90,8 +114,24 @@ const ClientsView: React.FC = () => {
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-lg font-semibold">{client.name}</h3>
-                  <p className="text-sm text-gray-600">{client.cpf}</p>
+                  <h3 className="text-lg font-semibold">
+                    {searchTerm ? (
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: highlightSearchTerm(client.name, searchTerm) 
+                      }} />
+                    ) : (
+                      client.name
+                    )}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {searchTerm && client.cpf.includes(searchTerm) ? (
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: highlightSearchTerm(client.cpf, searchTerm) 
+                      }} />
+                    ) : (
+                      client.cpf
+                    )}
+                  </p>
                 </div>
               </div>
               <button
@@ -109,7 +149,15 @@ const ClientsView: React.FC = () => {
             <div className="space-y-3 text-sm">
               <div className="flex items-center text-gray-600">
                 <Phone className="w-4 h-4 mr-2" />
-                <span>{client.phone}</span>
+                <span>
+                  {searchTerm && client.phone.includes(searchTerm) ? (
+                    <span dangerouslySetInnerHTML={{ 
+                      __html: highlightSearchTerm(client.phone, searchTerm) 
+                    }} />
+                  ) : (
+                    client.phone
+                  )}
+                </span>
               </div>
               <div className="flex items-center text-gray-600">
                 <Mail className="w-4 h-4 mr-2" />
@@ -136,7 +184,19 @@ const ClientsView: React.FC = () => {
         ))}
         {filteredClients.length === 0 && (
           <div className="col-span-full text-center py-8 bg-white rounded-lg shadow">
-            <p className="text-gray-500">Nenhum cliente encontrado</p>
+            {searchTerm ? (
+              <div>
+                <p>Nenhum cliente encontrado para "{searchTerm}"</p>
+                <button
+                  onClick={clearSearch}
+                  className="mt-2 text-blue-600 hover:text-blue-800"
+                >
+                  Limpar busca
+                </button>
+              </div>
+            ) : (
+              <p className="text-gray-500">Nenhum cliente encontrado</p>
+            )}
           </div>
         )}
       </div>

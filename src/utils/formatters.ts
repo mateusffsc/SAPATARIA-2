@@ -63,8 +63,8 @@ const formatDateTime = (date: string | Date): string => {
 };
 
 export const highlightSearchTerm = (text: string, searchTerm: string): string => {
-  if (!searchTerm) return text;
+  if (!searchTerm || !text) return text || '';
   
-  const regex = new RegExp(`(${searchTerm})`, 'gi');
+  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
 };

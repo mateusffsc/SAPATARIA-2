@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { Search, DollarSign, Calendar, AlertCircle, Users, Clock, Eye, Edit, CheckCircle, MessageCircle } from 'lucide-react';
+import { Search, DollarSign, ArrowUpCircle, ArrowDownCircle, RefreshCw, Clock, Eye, Edit, CheckCircle, MessageCircle, X } from 'lucide-react';
 import OSLink from '../shared/OSLink';
 import { formatCurrency } from '../../utils/currencyUtils';
-import PaymentModal from '../payments/PaymentModal';
-import WhatsAppSender from '../orders/WhatsAppSender';
+import { useToast } from '../shared/ToastContainer';
+import { useAppContext } from '../../context/AppContext';
 
 const CreditView: React.FC = () => {
-  const { orders, clients, setModalType, setFormData, setShowModal } = useAppContext();
+  const { showError } = useToast();
+  const { setModalType, setFormData, setShowModal, bankAccounts, orders, clients } = useAppContext();
   const { hasPermission } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   
@@ -34,10 +34,12 @@ const CreditView: React.FC = () => {
   // Filter orders
   const filteredOrders = pendingOrders.filter(order => {
     const client = clients.find(c => c.id === order.clientId);
+    const clientCpf = client?.cpf || '';
+    
     const matchesSearch = 
       order.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (client?.cpf || '').includes(searchTerm);
+      clientCpf.includes(searchTerm);
 
     const paymentStatus = getPaymentStatus(order.deliveryDate);
     const matchesStatus = statusFilter === 'all' || 
@@ -74,12 +76,21 @@ const CreditView: React.FC = () => {
     });
     setModalType('payment');
     setShowModal(true);
-    setShowPaymentModal(true);
   };
 
   const openWhatsAppModal = (order: any) => {
     setSelectedOrder(order);
     setShowWhatsAppModal(true);
+  };
+
+  // Get client CPF for display
+  const getClientCpf = (clientId: number) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.cpf || '';
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
   };
 
   return (
@@ -95,7 +106,9 @@ const CreditView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow hover:shadow-md transition-shadow">
           <div className="flex items-center">
-            <Users className="w-8 h-8 text-blue-600" />
+            <div className="p-2 rounded-lg bg-blue-100">
+              <User className="w-6 h-6 text-blue-600" />
+            </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Clientes</p>
               <p className="text-xl sm:text-2xl font-bold">{stats.totalClients}</p>
@@ -105,7 +118,9 @@ const CreditView: React.FC = () => {
 
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow hover:shadow-md transition-shadow">
           <div className="flex items-center">
-            <DollarSign className="w-8 h-8 text-orange-600" />
+            <div className="p-2 rounded-lg bg-orange-100">
+              <DollarSign className="w-6 h-6 text-orange-600" />
+            </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Total Pendente</p>
               <p className="text-xl sm:text-2xl font-bold text-orange-600">{formatCurrency(stats.totalPending)}</p>
@@ -115,7 +130,9 @@ const CreditView: React.FC = () => {
 
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow hover:shadow-md transition-shadow">
           <div className="flex items-center">
-            <AlertCircle className="w-8 h-8 text-red-600" />
+            <div className="p-2 rounded-lg bg-red-100">
+              <AlertCircle className="w-6 h-6 text-red-600" />
+            </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Vencido</p>
               <p className="text-xl sm:text-2xl font-bold text-red-600">{formatCurrency(stats.overdue)}</p>
@@ -125,7 +142,9 @@ const CreditView: React.FC = () => {
 
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow hover:shadow-md transition-shadow">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-yellow-600" />
+            <div className="p-2 rounded-lg bg-yellow-100">
+              <Clock className="w-6 h-6 text-yellow-600" />
+            </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Vence Hoje</p>
               <p className="text-xl sm:text-2xl font-bold text-yellow-600">{formatCurrency(stats.dueToday)}</p>
@@ -143,10 +162,18 @@ const CreditView: React.FC = () => {
               <input
                 type="text"
                 placeholder="Buscar por cliente, CPF ou número da OS..."
-                className="pl-10 pr-4 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="pl-10 pr-10 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+              {searchTerm && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
           <div className="w-full sm:w-48">
@@ -162,6 +189,18 @@ const CreditView: React.FC = () => {
             </select>
           </div>
         </div>
+        
+        {/* Search Results Summary */}
+        <div className="mt-2 text-sm text-gray-600">
+          {searchTerm && (
+            <span>
+              {filteredOrders.length} resultado(s) para "{searchTerm}"
+            </span>
+          )}
+          {!searchTerm && (
+            <span>{filteredOrders.length} pendências</span>
+          )}
+        </div>
       </div>
 
       {/* Mobile Cards View */}
@@ -169,10 +208,11 @@ const CreditView: React.FC = () => {
         {filteredOrders.map(order => {
           const paymentStatus = getPaymentStatus(order.deliveryDate);
           const statusColors = {
-            'overdue': 'border-l-4 border-red-500',
-            'due-today': 'border-l-4 border-yellow-500',
+            'overdue': 'border-l-4 border-red-500 bg-red-50',
+            'due-today': 'border-l-4 border-yellow-500 bg-yellow-50',
             'on-time': 'border-l-4 border-green-500'
           };
+          const clientCpf = getClientCpf(order.clientId);
 
           return (
             <div 
@@ -183,7 +223,24 @@ const CreditView: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <OSLink order={order} />
-                  <p className="text-sm text-gray-600 mt-1">{order.client}</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {searchTerm ? (
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: highlightSearchTerm(order.client, searchTerm) 
+                      }} />
+                    ) : (
+                      order.client
+                    )}
+                    {clientCpf && (
+                      <span className="ml-1 text-xs text-gray-500">
+                        ({searchTerm && clientCpf.includes(searchTerm) ? (
+                          <span dangerouslySetInnerHTML={{ 
+                            __html: highlightSearchTerm(clientCpf, searchTerm) 
+                          }} />
+                        ) : clientCpf})
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600">Vencimento</p>
@@ -239,7 +296,19 @@ const CreditView: React.FC = () => {
         })}
         {filteredOrders.length === 0 && (
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            Nenhuma ordem de serviço com pendências encontrada
+            {searchTerm ? (
+              <div>
+                <p>Nenhuma pendência encontrada para "{searchTerm}"</p>
+                <button
+                  onClick={clearSearch}
+                  className="mt-2 text-blue-600 hover:text-blue-800"
+                >
+                  Limpar busca
+                </button>
+              </div>
+            ) : (
+              'Nenhuma ordem de serviço com pendências encontrada'
+            )}
           </div>
         )}
       </div>
@@ -252,6 +321,7 @@ const CreditView: React.FC = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">OS</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cliente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">CPF</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Artigo</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Total</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Pago</th>
@@ -268,6 +338,7 @@ const CreditView: React.FC = () => {
                   'due-today': 'border-l-4 border-yellow-500 bg-yellow-50',
                   'on-time': 'border-l-4 border-green-500'
                 };
+                const clientCpf = getClientCpf(order.clientId);
 
                 return (
                   <tr 
@@ -280,7 +351,24 @@ const CreditView: React.FC = () => {
                     <td className="px-6 py-4">
                       <OSLink order={order} />
                     </td>
-                    <td className="px-6 py-4 font-medium">{order.client}</td>
+                    <td className="px-6 py-4 font-medium">
+                      {searchTerm ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerm(order.client, searchTerm) 
+                        }} />
+                      ) : (
+                        order.client
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {searchTerm && clientCpf.includes(searchTerm) ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerm(clientCpf, searchTerm) 
+                        }} />
+                      ) : (
+                        clientCpf
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <div>
                         <div className="font-medium">{order.article}</div>
@@ -351,8 +439,20 @@ const CreditView: React.FC = () => {
               })}
               {filteredOrders.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                    Nenhuma ordem de serviço com pendências encontrada
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                    {searchTerm ? (
+                      <div>
+                        <p>Nenhuma pendência encontrada para "{searchTerm}"</p>
+                        <button
+                          onClick={clearSearch}
+                          className="mt-2 text-blue-600 hover:text-blue-800"
+                        >
+                          Limpar busca
+                        </button>
+                      </div>
+                    ) : (
+                      'Nenhuma ordem de serviço com pendências encontrada'
+                    )}
                   </td>
                 </tr>
               )}
@@ -361,16 +461,12 @@ const CreditView: React.FC = () => {
         </div>
       </div>
 
-      {/* Modais */}
+      {/* WhatsApp Modal */}
       {showWhatsAppModal && selectedOrder && (
         <WhatsAppSender
           order={selectedOrder}
           onClose={() => setShowWhatsAppModal(false)}
         />
-      )}
-
-      {showPaymentModal && (
-        <PaymentModal />
       )}
     </div>
   );

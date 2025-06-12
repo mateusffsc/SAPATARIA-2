@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { Search, DollarSign, ArrowUpCircle, ArrowDownCircle, RefreshCw, Clock, Eye, Edit, CheckCircle, MessageCircle, X } from 'lucide-react';
+import { Search, DollarSign, ArrowUpCircle, ArrowDownCircle, RefreshCw, Clock, Eye, Edit, CheckCircle, MessageCircle, X, User, AlertCircle } from 'lucide-react';
 import OSLink from '../shared/OSLink';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { useToast } from '../shared/ToastContainer';
-import { useAppContext } from '../../context/AppContext';
+import WhatsAppSender from '../orders/WhatsAppSender';
 
 const CreditView: React.FC = () => {
   const { showError } = useToast();
@@ -91,6 +91,13 @@ const CreditView: React.FC = () => {
 
   const clearSearch = () => {
     setSearchTerm('');
+  };
+
+  // Helper function to highlight search terms
+  const highlightSearchTerm = (text: string, searchTerm: string) => {
+    if (!searchTerm) return text;
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
   };
 
   return (

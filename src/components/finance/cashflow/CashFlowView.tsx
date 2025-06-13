@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, ArrowUpCircle, ArrowDownCircle, Plus, Edit, Trash2, Building2, ArrowRightLeft } from 'lucide-react';
 import { FinancialService, FinancialTransaction, CashFlowData } from '../../../services/financialService';
 import { CashService } from '../../../services/cashService';
@@ -8,9 +8,13 @@ import { useAppContext } from '../../../context/AppContext';
 
 const CashFlowView: React.FC = () => {
   const { bankAccounts, setModalType, setShowModal } = useAppContext();
+  
+  // Get current date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0];
+  
   const [dateRange, setDateRange] = useState({
     startDate: '2025-06-01',
-    endDate: '2025-06-30'
+    endDate: today
   });
   
   const [cashFlowData, setCashFlowData] = useState<CashFlowData[]>([]);
@@ -20,13 +24,13 @@ const CashFlowView: React.FC = () => {
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<FinancialTransaction | null>(null);
   const [transactionForm, setTransactionForm] = useState({
-    type: 'income' as 'income' | 'expense',
+    type: 'income' as 'income' | 'expense' | 'transfer',
     amount: '',
     description: '',
     customDescription: '',
     category: '',
     payment_method: '',
-    date: new Date().toISOString().split('T')[0]
+    date: today
   });
   const [balance, setBalance] = useState<{ cash: number } | null>(null);
   const [accountBalances, setAccountBalances] = useState<{ id: number; name: string; balance: number }[]>([]);
@@ -235,7 +239,7 @@ const CashFlowView: React.FC = () => {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="p-2 rounded-lg bg-blue-100">
+            <div className="p-2 bg-blue-100 rounded-lg">
               <DollarSign className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">

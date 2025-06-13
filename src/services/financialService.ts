@@ -118,6 +118,16 @@ export class FinancialService {
     if (error) throw error;
   }
 
+  static async deleteTransactionsByReference(referenceType: string, referenceId: number): Promise<void> {
+    const { error } = await supabase
+      .from('financial_transactions')
+      .delete()
+      .eq('reference_type', referenceType)
+      .eq('reference_id', referenceId);
+
+    if (error) throw error;
+  }
+
   static async getCashFlowData(startDate: string, endDate: string): Promise<CashFlowData[]> {
     const transactions = await this.getTransactionsByDateRange(startDate, endDate);
     

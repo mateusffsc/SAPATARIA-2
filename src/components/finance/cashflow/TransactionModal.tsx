@@ -13,6 +13,9 @@ const TransactionModal: React.FC = () => {
     paymentMethods
   } = useAppContext();
 
+  // Get current date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0];
+
   const [transactionForm, setTransactionForm] = useState({
     type: 'income' as 'income' | 'expense' | 'transfer',
     amount: '',
@@ -20,7 +23,7 @@ const TransactionModal: React.FC = () => {
     customDescription: '',
     category: '',
     payment_method: '',
-    date: new Date().toISOString().split('T')[0],
+    date: today,
     source_account_id: '',
     destination_account_id: ''
   });

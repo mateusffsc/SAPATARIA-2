@@ -6,13 +6,12 @@ import { CashService } from '../../services/cashService';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../shared/ToastContainer';
-import { getCurrentDate } from '../../utils/formatters';
 
 const FinancialLowView: React.FC = () => {
   const { showError } = useToast();
   
-  // Today's date only with correct timezone
-  const today = getCurrentDate();
+  // Today's date only
+  const today = new Date().toISOString().split('T')[0];
   
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
   const [loading, setLoading] = useState(true);

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Filter, Download, FileText, DollarSign, TrendingUp, TrendingDown, RefreshCw, X, ShoppingBag, ArrowRight } from 'lucide-react';
 import { FinancialService, FinancialTransaction } from '../../../services/financialService';
 import { formatCurrency } from '../../../utils/currencyUtils';
-import { getCurrentDate } from '../../../utils/formatters';
 import DateRangePicker from './DateRangePicker';
 import TransactionTable from './TransactionTable';
 import ExportModal from './ExportModal';
@@ -32,10 +31,13 @@ const FinancialReportsView: React.FC = () => {
   const { showSuccess, showError } = useToast();
   const { setOrders, setProductSales, setCurrentView, setModalType, setFormData, setShowModal } = useAppContext();
 
+  // Get current date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0];
+
   const [filters, setFilters] = useState<FilterState>({
     dateRange: {
-      startDate: getCurrentDate(),
-      endDate: getCurrentDate(),
+      startDate: today,
+      endDate: today,
       preset: 'today'
     },
     movementType: 'all',
@@ -185,10 +187,13 @@ const FinancialReportsView: React.FC = () => {
   };
 
   const clearFilters = () => {
+    // Get current date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+    
     setFilters({
       dateRange: {
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0],
+        startDate: today,
+        endDate: today,
         preset: 'today'
       },
       movementType: 'all',

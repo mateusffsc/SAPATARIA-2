@@ -7,6 +7,7 @@ import { FinancialService, FinancialTransaction } from '../services/financialSer
 import { CashService } from '../services/cashService';
 import { BankService } from '../services/bankService';
 import { ProductSaleService, ProductSale } from '../services/productSaleService';
+import { getCurrentDate } from '../utils/formatters';
 
 interface AppContextType {
   currentView: string;

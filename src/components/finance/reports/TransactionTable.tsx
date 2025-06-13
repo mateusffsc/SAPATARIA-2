@@ -3,6 +3,8 @@ import { ArrowUpCircle, ArrowDownCircle, Edit, Trash2, ExternalLink, ArrowRight 
 import { FinancialTransaction } from '../../../services/financialService';
 import { formatCurrency } from '../../../utils/currencyUtils';
 import { useAppContext } from '../../../context/AppContext';
+import { formatSaoPauloDate } from '../../../utils/dateUtils';
+import { toSaoPauloDate } from '../../../utils/dateUtils';
 
 interface TransactionTableProps {
   transactions: FinancialTransaction[];
@@ -21,7 +23,8 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-BR');
+    const date = toSaoPauloDate(new Date(dateString));
+    return date.toLocaleString('pt-BR');
   };
   
   const getTypeIndicator = (type: string) => {
@@ -201,9 +204,9 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <div>
-                    <div>{new Date(transaction.date).toLocaleDateString('pt-BR')}</div>
+                    <div>{formatSaoPauloDate(transaction.date)}</div>
                     <div className="text-xs text-gray-500">
-                      {new Date(transaction.created_at).toLocaleTimeString('pt-BR')}
+                      {formatDateTime(transaction.created_at)}
                     </div>
                   </div>
                 </td>

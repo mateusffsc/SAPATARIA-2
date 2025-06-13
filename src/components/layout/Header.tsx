@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, Menu, Calendar } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
-import { getCurrentDate, formatLocalDate } from '../../utils/formatters';
+import { formatSaoPauloDate } from '../../utils/dateUtils';
 
 const Header: React.FC = () => {
   const { currentUser, logout } = useAuth();
@@ -21,13 +21,7 @@ const Header: React.FC = () => {
 
   // Get current date with correct timezone
   const today = new Date();
-  const currentDate = today.toLocaleDateString('pt-BR', {
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric',
-    timeZone: 'America/Sao_Paulo'
-  });
+  const currentDate = formatSaoPauloDate(today);
 
   return (
     <header className="bg-white shadow-sm border-b px-4 lg:px-6 py-4 flex-none">

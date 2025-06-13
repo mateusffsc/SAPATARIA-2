@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, ChevronDown } from 'lucide-react';
 import { getCurrentDate } from '../../../utils/formatters';
+import { getCurrentSaoPauloDateString } from '../../../utils/dateUtils';
 
 interface DateRangePickerProps {
   startDate: string;
@@ -26,7 +27,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   const handlePresetChange = (newPreset: string) => {
     // Get current date with correct timezone
-    const today = getCurrentDate();
+    const today = getCurrentSaoPauloDateString();
     
     let start = '';
     let end = '';
@@ -38,8 +39,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
       case 'week':
         const weekStart = new Date(today);
         const dayOfWeek = weekStart.getDay();
-        const diff = weekStart.getDate() - dayOfWeek;
-        weekStart.setDate(diff);
+        weekStart.setDate(weekStart.getDate() - dayOfWeek); // Go to Sunday
         start = weekStart.toISOString().split('T')[0];
         end = today;
         break;

@@ -10,6 +10,7 @@ import { OrderService } from '../../../services/orderService';
 import { ProductSaleService } from '../../../services/productSaleService';
 import { useAppContext } from '../../../context/AppContext';
 import { getCurrentDate } from '../../../utils/formatters';
+import { getSaoPauloStartOfDay, getSaoPauloEndOfDay } from '../../../utils/dateUtils';
 
 interface FilterState {
   dateRange: {
@@ -96,12 +97,8 @@ const FinancialReportsView: React.FC = () => {
     // Date range filter
     filtered = filtered.filter(transaction => {
       const transactionDate = new Date(transaction.date);
-      const startDate = new Date(filters.dateRange.startDate);
-      const endDate = new Date(filters.dateRange.endDate);
-      
-      // Set time to beginning/end of day for proper comparison
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setHours(23, 59, 59, 999);
+      const startDate = getSaoPauloStartOfDay(filters.dateRange.startDate);
+      const endDate = getSaoPauloEndOfDay(filters.dateRange.endDate);
       
       return transactionDate >= startDate && transactionDate <= endDate;
     });

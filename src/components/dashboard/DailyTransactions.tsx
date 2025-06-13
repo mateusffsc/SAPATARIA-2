@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, ArrowUpCircle, ArrowDownCircle, RefreshCw, Search, DollarSign, Plus } from 'lucide-react';
 import { FinancialService, FinancialTransaction } from '../../services/financialService';
+import { CashService } from '../../services/cashService';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { useToast } from '../shared/ToastContainer';
 import { useAppContext } from '../../context/AppContext';
 import { getCurrentDate } from '../../utils/formatters';
+import { toSaoPauloDate } from '../../utils/dateUtils';
 
 const DailyTransactions: React.FC = () => {
   const { showError } = useToast();
@@ -18,7 +20,7 @@ const DailyTransactions: React.FC = () => {
     balance: 0
   });
 
-  // Get today's date
+  // Get today's date with correct timezone
   const today = getCurrentDate();
 
   const loadData = async () => {
@@ -168,44 +170,49 @@ const DailyTransactions: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTransactions.map((transaction) => (
-                <tr key={transaction.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(transaction.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      transaction.type === 'income' ? 'bg-green-100 text-green-800' : 
-                      transaction.type === 'expense' ? 'bg-red-100 text-red-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {transaction.type === 'income' ? 'Receita' : 
-                       transaction.type === 'expense' ? 'Despesa' : 
-                       'Transf.'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    <div className="truncate max-w-[200px]" title={transaction.description}>
-                      {transaction.description}
-                    </div>
-                    <div className="text-xs text-gray-500">{transaction.category}</div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.payment_method || '-'}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                    <span className={
-                      transaction.type === 'income' ? 'text-green-600' : 
-                      transaction.type === 'expense' ? 'text-red-600' : 
-                      'text-blue-600'
-                    }>
-                      {transaction.type === 'income' ? '+' : 
-                       transaction.type === 'expense' ? '-' : 
-                       '↔'} {formatCurrency(Math.abs(transaction.amount))}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {filteredTransactions.map((transaction) => {
+                // Convert to São Paulo time for display
+                const transactionDate = toSaoPauloDate(new Date(transaction.created_at));
+                
+                return (
+                  <tr key={transaction.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                      {transactionDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        transaction.type === 'income' ? 'bg-green-100 text-green-800' : 
+                        transaction.type === 'expense' ? 'bg-red-100 text-red-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {transaction.type === 'income' ? 'Receita' : 
+                         transaction.type === 'expense' ? 'Despesa' : 
+                         'Transf.'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      <div className="truncate max-w-[200px]" title={transaction.description}>
+                        {transaction.description}
+                      </div>
+                      <div className="text-xs text-gray-500">{transaction.category}</div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                      {transaction.payment_method || '-'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                      <span className={
+                        transaction.type === 'income' ? 'text-green-600' : 
+                        transaction.type === 'expense' ? 'text-red-600' : 
+                        'text-blue-600'
+                      }>
+                        {transaction.type === 'income' ? '+' : 
+                         transaction.type === 'expense' ? '-' : 
+                         '↔'} {formatCurrency(Math.abs(transaction.amount))}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         ) : (

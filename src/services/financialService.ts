@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { getSaoPauloStartOfDay, getSaoPauloEndOfDay } from '../utils/dateUtils';
 
 export interface FinancialTransaction {
   id: number;
@@ -47,11 +48,21 @@ export class FinancialService {
   }
 
   static async getTransactionsByDateRange(startDate: string, endDate: string): Promise<FinancialTransaction[]> {
+    // Convert to São Paulo timezone for accurate date comparison
+    const startDateObj = getSaoPauloStartOfDay(startDate);
+    const endDateObj = getSaoPauloEndOfDay(endDate);
+    
+    // Format as ISO strings for database query
+    const startISO = startDateObj.toISOString().split('T')[0];
+    const endISO = endDateObj.toISOString().split('T')[0];
+    
+    console.log(`Fetching transactions from ${startISO} to ${endISO}`);
+    
     const { data, error } = await supabase
       .from('financial_transactions')
       .select('*')
-      .gte('date', startDate)
-      .lte('date', endDate)
+      .gte('date', startISO)
+      .lte('date', endISO)
       .order('date', { ascending: false });
 
     if (error) throw error;

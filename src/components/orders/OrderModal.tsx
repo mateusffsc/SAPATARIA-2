@@ -105,7 +105,7 @@ const OrderModal: React.FC = () => {
   );
 
   function getDefaultDeliveryDate(): string {
-    const date = new Date();
+    const date = new Date(getCurrentDate());
     date.setDate(date.getDate() + 7);
     return date.toISOString().split('T')[0];
   }

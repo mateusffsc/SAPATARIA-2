@@ -7,6 +7,7 @@ import { formatCurrency } from '../../utils/currencyUtils';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../shared/ToastContainer';
 import { getCurrentDate } from '../../utils/formatters';
+import { toSaoPauloDate } from '../../utils/dateUtils';
 
 const FinancialLowView: React.FC = () => {
   const { showError } = useToast();
@@ -72,7 +73,8 @@ const FinancialLowView: React.FC = () => {
     
     // Aggregate transactions by hour
     transactions.forEach(transaction => {
-      const date = new Date(transaction.created_at);
+      // Convert to São Paulo time for consistent hour extraction
+      const date = toSaoPauloDate(new Date(transaction.created_at));
       const hour = date.getHours().toString().padStart(2, '0');
       
       if (transaction.type === 'income') {
@@ -226,51 +228,56 @@ const FinancialLowView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {transactions.map((transaction) => (
-                <tr key={transaction.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(transaction.created_at).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      transaction.type === 'income' ? 'bg-green-100 text-green-800' : 
-                      transaction.type === 'expense' ? 'bg-red-100 text-red-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {transaction.type === 'income' ? 'Receita' : 
-                       transaction.type === 'expense' ? 'Despesa' : 
-                       'Transferência'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                    <div className="truncate" title={transaction.description}>
-                      {transaction.description}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">
-                      {transaction.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {transaction.payment_method || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <span className={
-                      transaction.type === 'income' ? 'text-green-600' : 
-                      transaction.type === 'expense' ? 'text-red-600' : 
-                      'text-blue-600'
-                    }>
-                      {transaction.type === 'income' ? '+' : 
-                       transaction.type === 'expense' ? '-' : 
-                       '↔'} {formatCurrency(Math.abs(transaction.amount))}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {transactions.map((transaction) => {
+                // Convert to São Paulo time for display
+                const transactionDate = toSaoPauloDate(new Date(transaction.created_at));
+                
+                return (
+                  <tr key={transaction.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {transactionDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        transaction.type === 'income' ? 'bg-green-100 text-green-800' : 
+                        transaction.type === 'expense' ? 'bg-red-100 text-red-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {transaction.type === 'income' ? 'Receita' : 
+                         transaction.type === 'expense' ? 'Despesa' : 
+                         'Transferência'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                      <div className="truncate" title={transaction.description}>
+                        {transaction.description}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">
+                        {transaction.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {transaction.payment_method || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <span className={
+                        transaction.type === 'income' ? 'text-green-600' : 
+                        transaction.type === 'expense' ? 'text-red-600' : 
+                        'text-blue-600'
+                      }>
+                        {transaction.type === 'income' ? '+' : 
+                         transaction.type === 'expense' ? '-' : 
+                         '↔'} {formatCurrency(Math.abs(transaction.amount))}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
               {transactions.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                     Nenhuma transação encontrada para hoje
                   </td>
                 </tr>

@@ -261,7 +261,7 @@ const OrderModal: React.FC = () => {
 
       let savedOrder;
       if (formData.id) {
-        savedOrder = await OrderService.updateOrder(formData.id, orderPayload);
+        savedOrder = await OrderService.update(formData.id, orderPayload);
         setOrders(prev => prev.map(order => order.id === formData.id ? savedOrder : order));
         showSuccess(SUCCESS_MESSAGES.ORDER_UPDATED);
       } else {

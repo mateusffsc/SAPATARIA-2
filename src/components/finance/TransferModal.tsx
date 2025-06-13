@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ArrowRight, Save } from 'lucide-react';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { CashService } from '../../services/cashService';
@@ -30,6 +30,19 @@ const TransferModal: React.FC<TransferModalProps> = ({ accounts, onClose, onSucc
   
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Set default source account to Caixa Loja if available
+  useEffect(() => {
+    if (accounts.length > 0) {
+      const caixaLoja = accounts.find(a => a.name === 'Caixa Loja');
+      if (caixaLoja) {
+        setFormData(prev => ({
+          ...prev,
+          sourceAccountId: caixaLoja.id.toString()
+        }));
+      }
+    }
+  }, [accounts]);
   
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

@@ -5,6 +5,7 @@ import { formatCurrency } from '../../../utils/currencyUtils';
 import CashRegisterModal from './CashRegisterModal';
 import { FinancialService } from '../../../services/financialService';
 import { useAuth } from '../../../context/AuthContext';
+import { useAppContext } from '../../../context/AppContext';
 
 const CashRegisterWidget: React.FC = () => {
   const [currentSession, setCurrentSession] = useState<CashRegisterSession | null>(null);
@@ -14,6 +15,7 @@ const CashRegisterWidget: React.FC = () => {
   const [modalType, setModalType] = useState<'open' | 'close'>('open');
   const [loading, setLoading] = useState(true);
   const { hasPermission } = useAuth();
+  const { bankAccounts } = useAppContext();
 
   useEffect(() => {
     loadCashRegisterStatus();
@@ -26,8 +28,14 @@ const CashRegisterWidget: React.FC = () => {
       setCurrentSession(session);
       
       if (session) {
-        const balance = await CashRegisterService.getCashBalance();
-        setCashBalance(balance);
+        // Get cash balance from Caixa Loja account
+        const caixaLojaAccount = bankAccounts.find(a => a.name === 'Caixa Loja');
+        if (caixaLojaAccount) {
+          setCashBalance(caixaLojaAccount.balance);
+        } else {
+          const balance = await CashRegisterService.getCashBalance();
+          setCashBalance(balance);
+        }
         
         // Get today's income
         const today = new Date().toISOString().split('T')[0];

@@ -7,6 +7,7 @@ import { ClientService } from '../../services/clientService';
 import { CashService } from '../../services/cashService';
 import { Client, ProductSale, ProductSaleItem } from '../../types';
 import { supabase } from '../../lib/supabase';
+import { FinancialService } from '../../services/financialService';
 import { 
   validateCPF, 
   validatePhone, 

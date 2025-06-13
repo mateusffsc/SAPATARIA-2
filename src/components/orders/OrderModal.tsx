@@ -91,6 +91,15 @@ const OrderModal: React.FC = () => {
     originalTotalValue: formData.originalTotalValue || 0
   });
 
+  // Get technicians from employees list (role = 'technician')
+  const availableTechnicians = employees.filter(emp => emp.role === 'technician');
+
+  function getDefaultDeliveryDate(): string {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split('T')[0];
+  }
+
   const [skipEntryPayment, setSkipEntryPayment] = useState(false);
   const [managerPassword, setManagerPassword] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -105,15 +114,6 @@ const OrderModal: React.FC = () => {
     orderData.brand, 
     orderData.article
   );
-
-  // Get technicians from employees list (role = 'technician')
-  const availableTechnicians = employees.filter(emp => emp.role === 'technician');
-
-  function getDefaultDeliveryDate(): string {
-    const date = new Date();
-    date.setDate(date.getDate() + 7);
-    return date.toISOString().split('T')[0];
-  }
 
   useEffect(() => {
     if (!formData.id && !orderData.number) {
@@ -493,6 +493,7 @@ const OrderModal: React.FC = () => {
               value={orderData.model}
               onChange={(value) => handleInputChange('model', value)}
               suggestions={modelSuggestions}
+              field="model"
             />
             <FormInput
               label="Cor"
@@ -504,6 +505,7 @@ const OrderModal: React.FC = () => {
               value={orderData.size}
               onChange={(value) => handleInputChange('size', value)}
               suggestions={sizeSuggestions}
+              field="size"
             />
             <FormInput
               label="Número de Série"

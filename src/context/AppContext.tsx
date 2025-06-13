@@ -212,13 +212,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const accounts = await BankService.getAccounts();
       setBankAccounts(accounts);
+      
+      // Check if "Caixa Loja" account exists, if not create it
+      const caixaLojaAccount = accounts.find(a => a.name === 'Caixa Loja');
+      if (!caixaLojaAccount) {
+        try {
+          const newAccount = await BankService.createAccount({
+            name: 'Caixa Loja',
+            bankId: null,
+            balance: 0,
+            isActive: true
+          });
+          setBankAccounts(prev => [...prev, newAccount]);
+        } catch (error) {
+          console.error('Error creating Caixa Loja account:', error);
+        }
+      }
     } catch (error) {
       console.error('Error loading bank accounts:', error);
       // Initialize with default accounts if there's an error
       setBankAccounts([
         {
           id: 1,
-          name: 'Caixa',
+          name: 'Caixa Loja',
           bankId: null,
           balance: 0,
           isActive: true,
@@ -365,7 +381,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Load financial data
   const loadFinancialData = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getCurrentDate();
       const [allTransactions, todayTransactions, balance] = await Promise.all([
         FinancialService.getAllTransactions(),
         FinancialService.getTransactionsByDateRange(today, today),
@@ -397,6 +413,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Create financial transaction
   const createFinancialTransaction = async (transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Find the "Caixa Loja" account if not specified
+      if (!transaction.destination_account_id && transaction.type === 'income') {
+        const caixaLoja = bankAccounts.find(acc => acc.name === 'Caixa Loja');
+        if (caixaLoja) {
+          transaction.destination_account_id = caixaLoja.id;
+        }
+      }
+      
+      if (!transaction.source_account_id && transaction.type === 'expense') {
+        const caixaLoja = bankAccounts.find(acc => acc.name === 'Caixa Loja');
+        if (caixaLoja) {
+          transaction.source_account_id = caixaLoja.id;
+        }
+      }
+      
       if (transaction.type === 'transfer') {
         // Use the process_account_transfer function for transfers
         await BankService.transferBetweenAccounts(

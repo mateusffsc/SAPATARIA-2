@@ -81,9 +81,9 @@ export const highlightSearchTerm = (text: string, searchTerm: string): string =>
 export const getCurrentDate = (): string => {
   const now = new Date();
 
-  // Ajusta para UTC e depois aplica o offset do Brasil (UTC-3)
+  // Adjust to UTC and then apply Brazil offset (UTC-3)
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const saoPauloOffset = -3 * 60; // minutos
+  const saoPauloOffset = -3 * 60; // minutes
   const saoPauloTime = new Date(utc + (saoPauloOffset * 60000));
 
   const year = saoPauloTime.getFullYear();

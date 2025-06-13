@@ -16,6 +16,7 @@ import {
   SUCCESS_MESSAGES 
 } from '../../utils/validators';
 import { useToast } from '../shared/ToastContainer';
+import { getCurrentDate } from '../../utils/formatters';
 
 interface ProductSaleModalProps {
   onClose: () => void;
@@ -234,10 +235,13 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
         clientName = client?.name || '';
       }
 
+      // Get current date with correct timezone
+      const today = getCurrentDate();
+
       // Prepare sale data
       const saleData = {
         sale_number: saleNumber,
-        date: new Date().toISOString().split('T')[0],
+        date: today,
         client_id: clientId,
         client_name: clientName,
         total_amount: finalTotal,

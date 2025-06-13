@@ -52,6 +52,31 @@ const BankAccountsView: React.FC = () => {
   useEffect(() => {
     loadAccounts();
   }, [banks]);
+
+  // Check if "Caixa Loja" account exists, if not create it
+  useEffect(() => {
+    const createCaixaLojaAccount = async () => {
+      try {
+        const caixaLoja = accounts.find(a => a.name === 'Caixa Loja');
+        if (!caixaLoja) {
+          await BankService.createAccount({
+            name: 'Caixa Loja',
+            bankId: null,
+            balance: 0,
+            isActive: true
+          });
+          showSuccess('Conta "Caixa Loja" criada automaticamente');
+          loadAccounts();
+        }
+      } catch (error) {
+        console.error('Error creating Caixa Loja account:', error);
+      }
+    };
+    
+    if (!loading && accounts.length > 0) {
+      createCaixaLojaAccount();
+    }
+  }, [accounts, loading]);
   
   const handleDelete = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir esta conta? Esta ação não pode ser desfeita.')) {
@@ -62,6 +87,15 @@ const BankAccountsView: React.FC = () => {
           showError(
             'Conta com saldo', 
             'Não é possível excluir uma conta com saldo. Transfira o saldo para outra conta primeiro.'
+          );
+          return;
+        }
+        
+        // Don't allow deletion of special accounts
+        if (account && (account.name === 'Caixa Loja' || account.name === 'Caixa' || account.name === 'Cofre')) {
+          showError(
+            'Conta especial', 
+            'Não é possível excluir esta conta especial do sistema.'
           );
           return;
         }
@@ -202,7 +236,12 @@ const BankAccountsView: React.FC = () => {
       {/* Accounts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {accounts.map(account => (
-          <div key={account.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+          <div 
+            key={account.id} 
+            className={`bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow ${
+              account.name === 'Caixa Loja' ? 'border-l-4 border-green-500' : ''
+            }`}
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -226,8 +265,8 @@ const BankAccountsView: React.FC = () => {
                 >
                   <Edit className="w-4 h-4" />
                 </button>
-                {/* Only allow deletion if not a special account (Caixa or Cofre) */}
-                {account.name !== 'Caixa' && account.name !== 'Cofre' && (
+                {/* Only allow deletion if not a special account */}
+                {account.name !== 'Caixa Loja' && account.name !== 'Caixa' && account.name !== 'Cofre' && (
                   <button
                     onClick={() => handleDelete(account.id)}
                     className="text-red-600 hover:text-red-800 transition-colors"

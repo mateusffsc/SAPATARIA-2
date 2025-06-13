@@ -20,13 +20,31 @@ export interface CashOperation {
 export class CashService {
   static async processOperation(operation: CashOperation) {
     try {
-      // 1. Criar a transação financeira
+      // Find the "Caixa Loja" account
+      const accounts = await BankService.getAccounts();
+      const cashAccount = accounts.find(a => a.name === 'Caixa Loja');
+      
+      if (!cashAccount) {
+        console.error('Conta "Caixa Loja" não encontrada');
+        throw new Error('Conta "Caixa Loja" não encontrada');
+      }
+      
+      // Set the appropriate account ID based on operation type
+      if (operation.type === 'income') {
+        // For income, set destination to Caixa Loja
+        operation.destination_account_id = cashAccount.id;
+      } else if (operation.type === 'expense') {
+        // For expense, set source to Caixa Loja
+        operation.source_account_id = cashAccount.id;
+      }
+      
+      // 1. Create the financial transaction
       const transaction = await FinancialService.createTransaction({
         ...operation,
         amount: operation.type === 'income' ? Math.abs(operation.amount) : -Math.abs(operation.amount)
       });
 
-      // 2. Atualizar o caixa se for uma operação em dinheiro
+      // 2. Update the cash register if it's a cash operation
       if (operation.payment_method.toLowerCase().includes('dinheiro')) {
         const currentSession = await CashRegisterService.getCurrentSession();
         if (currentSession) {
@@ -56,12 +74,12 @@ export class CashService {
     try {
       // 1. Get bank account balances
       const accounts = await BankService.getAccounts();
-      const cashAccount = accounts.find(a => a.name.toLowerCase() === 'caixa');
+      const cashAccount = accounts.find(a => a.name === 'Caixa Loja');
       
       // 2. Calculate total balance from all accounts
       const total = accounts.reduce((sum, account) => sum + account.balance, 0);
       
-      // 3. Get cash balance (from the "Caixa" account)
+      // 3. Get cash balance (from the "Caixa Loja" account)
       const cash = cashAccount ? cashAccount.balance : 0;
 
       // 4. Get receivables (pending order payments)
@@ -89,6 +107,31 @@ export class CashService {
       };
     } catch (error) {
       console.error('Error getting cash balance:', error);
+      throw error;
+    }
+  }
+
+  static async processTransfer(
+    sourceAccountId: number,
+    destinationAccountId: number,
+    amount: number,
+    description: string,
+    paymentMethod: string,
+    date: string,
+    createdBy: string
+  ): Promise<void> {
+    try {
+      await BankService.transferBetweenAccounts(
+        sourceAccountId,
+        destinationAccountId,
+        amount,
+        description,
+        paymentMethod,
+        date,
+        createdBy
+      );
+    } catch (error) {
+      console.error('Error processing transfer:', error);
       throw error;
     }
   }

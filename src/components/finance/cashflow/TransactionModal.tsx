@@ -31,14 +31,24 @@ const TransactionModal: React.FC = () => {
   // Set default account on load
   useEffect(() => {
     if (bankAccounts.length > 0) {
-      // Find the cash account
-      const cashAccount = bankAccounts.find(account => account.name.toLowerCase() === 'caixa');
-      if (cashAccount) {
+      // Find the Caixa Loja account
+      const caixaLojaAccount = bankAccounts.find(account => account.name === 'Caixa Loja');
+      if (caixaLojaAccount) {
         setTransactionForm(prev => ({
           ...prev,
-          source_account_id: cashAccount.id.toString(),
-          destination_account_id: cashAccount.id.toString()
+          source_account_id: caixaLojaAccount.id.toString(),
+          destination_account_id: caixaLojaAccount.id.toString()
         }));
+      } else {
+        // Fallback to cash account if Caixa Loja doesn't exist
+        const cashAccount = bankAccounts.find(account => account.name.toLowerCase() === 'caixa');
+        if (cashAccount) {
+          setTransactionForm(prev => ({
+            ...prev,
+            source_account_id: cashAccount.id.toString(),
+            destination_account_id: cashAccount.id.toString()
+          }));
+        }
       }
     }
   }, [bankAccounts]);

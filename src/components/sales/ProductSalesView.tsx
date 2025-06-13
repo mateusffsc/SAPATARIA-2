@@ -236,7 +236,7 @@ const ProductSalesView: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600">Data</p>
-                  <p className="font-medium">{formatSaoPauloDate(sale.date)}</p>
+                  <p className="font-medium">{formatSaoPauloDate(sale.createdAt)}</p>
                 </div>
               </div>
 
@@ -350,8 +350,7 @@ const ProductSalesView: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div>
-                        <div>{formatSaoPauloDate(sale.date)}</div>
-                        <div className="text-xs text-gray-500">{formatRelativeDate(sale.date)}</div>
+                        <div>{formatSaoPauloDate(sale.createdAt)}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 font-bold text-green-600">

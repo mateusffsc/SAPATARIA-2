@@ -21,11 +21,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const { setCurrentView, setModalType, setFormData, setShowModal } = useAppContext();
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
-  const formatDateTime = (dateString: string) => {
-    const date = toSaoPauloDate(new Date(dateString));
-    return date.toLocaleString('pt-BR');
-  };
-  
   const getTypeIndicator = (type: string) => {
     if (type === 'income') {
       return (
@@ -203,7 +198,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <div>
-                    <div>{formatSaoPauloDate(transaction.date)}</div>
+                    {formatSaoPauloDate(transaction.created_at)}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

@@ -102,7 +102,7 @@ const ProductSaleViewModal: React.FC = () => {
               <div className="flex items-center justify-between">
                 <Calendar className="w-5 h-5 text-purple-600" />
                 <span className="text-lg font-bold text-purple-600">
-                  {formatSaoPauloDate(sale.date)}
+                  {formatSaoPauloDate(sale.createdAt)}
                 </span>
               </div>
               <p className="text-sm text-purple-600 mt-1">Data da Venda</p>

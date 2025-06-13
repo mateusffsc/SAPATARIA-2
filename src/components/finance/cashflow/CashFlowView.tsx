@@ -354,13 +354,10 @@ const CashFlowView: React.FC = () => {
                   ? bankAccounts.find(a => a.id === transaction.destination_account_id)?.name 
                   : '';
                 
-                // Convert to São Paulo time for display
-                const transactionDate = toSaoPauloDate(new Date(transaction.date));
-                
                 return (
                   <tr key={transaction.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      {formatSaoPauloDate(transaction.date)}
+                      {formatSaoPauloDate(transaction.created_at)}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

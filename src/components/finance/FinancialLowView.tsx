@@ -7,7 +7,7 @@ import { formatCurrency } from '../../utils/currencyUtils';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../shared/ToastContainer';
 import { getCurrentDate } from '../../utils/formatters';
-import { toSaoPauloDate } from '../../utils/dateUtils';
+import { toSaoPauloDate, formatSaoPauloDate } from '../../utils/dateUtils';
 
 const FinancialLowView: React.FC = () => {
   const { showError } = useToast();

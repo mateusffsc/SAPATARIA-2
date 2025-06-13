@@ -122,16 +122,7 @@ const PaymentModal: React.FC = () => {
       const currentOrder = formData as Order;
       const remainingValue = Number(currentOrder?.remainingValue || 0);
       
-      const updatedOrder: Partial<Order> = {
-        id: currentOrder.id,
-        remainingValue: Math.max(0, remainingValue - payment.value),
-        payments: [...(currentOrder.payments || []), payment],
-        status: remainingValue - payment.value <= 0 ? 'finalizada' : currentOrder.status,
-        lastModifiedBy: 'Sistema',
-        lastModifiedAt: new Date().toISOString()
-      };
-
-      // First, create a financial transaction for this payment
+      // Create a financial transaction for this payment
       await FinancialService.createTransaction({
         type: 'income',
         amount: payment.value,
@@ -144,8 +135,17 @@ const PaymentModal: React.FC = () => {
         date: payment.date,
         created_by: 'Sistema'
       });
+      
+      // Update the order with the new payment
+      const updatedOrder: Partial<Order> = {
+        id: currentOrder.id,
+        remainingValue: Math.max(0, remainingValue - payment.value),
+        payments: [...(currentOrder.payments || []), payment],
+        status: remainingValue - payment.value <= 0 ? 'finalizada' : currentOrder.status,
+        lastModifiedBy: 'Sistema',
+        lastModifiedAt: new Date().toISOString()
+      };
 
-      // Then update the order
       await OrderService.update(currentOrder.id, updatedOrder);
       setOrders(orders.map(o => o.id === currentOrder.id ? { ...o, ...updatedOrder } : o));
       

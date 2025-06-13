@@ -6,6 +6,8 @@ import {
   Calendar, AlertCircle, Filter, Eye, BarChart3, ShoppingBag
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/currencyUtils';
+import { getCurrentDate } from '../../utils/formatters';
+import { getSaoPauloStartOfDay } from '../../utils/dateUtils';
 
 interface DashboardFilter {
   period: 'today' | 'week' | 'month' | 'year';
@@ -58,7 +60,13 @@ const InteractiveDashboard: React.FC = () => {
         break;
     }
 
-    filtered = filtered.filter(order => new Date(order.date) >= startDate);
+    // Convert to São Paulo timezone for accurate comparison
+    const startDateSP = getSaoPauloStartOfDay(startDate);
+    
+    filtered = filtered.filter(order => {
+      const orderDate = getSaoPauloStartOfDay(order.date);
+      return orderDate >= startDateSP;
+    });
 
     // Status filter
     if (filters.status !== 'all') {
@@ -98,7 +106,14 @@ const InteractiveDashboard: React.FC = () => {
         break;
     }
 
-    filtered = filtered.filter(sale => new Date(sale.date) >= startDate);
+    // Convert to São Paulo timezone for accurate comparison
+    const startDateSP = getSaoPauloStartOfDay(startDate);
+    
+    filtered = filtered.filter(sale => {
+      const saleDate = getSaoPauloStartOfDay(sale.date);
+      return saleDate >= startDateSP;
+    });
+    
     return filtered;
   };
 

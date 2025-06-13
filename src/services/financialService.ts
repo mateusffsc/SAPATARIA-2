@@ -17,6 +17,7 @@ export interface FinancialTransaction {
   updated_at: string;
   source_account_id?: number;
   destination_account_id?: number;
+  runningBalance?: number;
 }
 
 export interface CashFlowData {
@@ -53,8 +54,8 @@ export class FinancialService {
     const endDateObj = getSaoPauloEndOfDay(endDate);
     
     // Format as ISO strings for database query
-    const startISO = startDateObj ? startDateObj.toISOString().split('T')[0] : startDate;
-    const endISO = endDateObj ? endDateObj.toISOString().split('T')[0] : endDate;
+    const startISO = startDateObj.toISOString().split('T')[0];
+    const endISO = endDateObj.toISOString().split('T')[0];
     
     console.log(`Fetching transactions from ${startISO} to ${endISO}`);
     

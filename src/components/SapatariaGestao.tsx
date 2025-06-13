@@ -61,7 +61,7 @@ const SapatariaGestao: React.FC = () => {
     if (showModal && modalType === 'view-order' && formData && formData.id) {
       const loadOrderData = async () => {
         try {
-          // First try to find by number if it's a string
+          // Check if the ID is a string that looks like an order number
           if (typeof formData.id === 'string' && formData.id.startsWith('OS-')) {
             const order = await OrderService.getByNumber(formData.id);
             if (order) {
@@ -70,10 +70,13 @@ const SapatariaGestao: React.FC = () => {
             }
           }
           
-          // Otherwise try to find by ID
-          const order = await OrderService.getById(formData.id);
-          if (order) {
-            setFormData(order);
+          // Check if the ID is a numeric value (either number or numeric string)
+          const numericId = typeof formData.id === 'number' ? formData.id : parseInt(formData.id);
+          if (!isNaN(numericId)) {
+            const order = await OrderService.getById(numericId);
+            if (order) {
+              setFormData(order);
+            }
           }
         } catch (error) {
           console.error('Error loading order data:', error);
@@ -89,21 +92,22 @@ const SapatariaGestao: React.FC = () => {
     if (showModal && modalType === 'view-sale' && formData && formData.id) {
       const loadSaleData = async () => {
         try {
-          // First try to find by number if it's a string
+          // Check if the ID is a string that looks like a sale number
           if (typeof formData.id === 'string' && formData.id.startsWith('VD-')) {
-            // This would need a getByNumber method in ProductSaleService
-            const sales = await ProductSaleService.getAll();
-            const sale = sales.find(s => s.saleNumber === formData.id);
+            const sale = await ProductSaleService.getByNumber(formData.id);
             if (sale) {
               setFormData(sale);
               return;
             }
           }
           
-          // Otherwise try to find by ID
-          const sale = await ProductSaleService.getById(formData.id);
-          if (sale) {
-            setFormData(sale);
+          // Check if the ID is a numeric value (either number or numeric string)
+          const numericId = typeof formData.id === 'number' ? formData.id : parseInt(formData.id);
+          if (!isNaN(numericId)) {
+            const sale = await ProductSaleService.getById(numericId);
+            if (sale) {
+              setFormData(sale);
+            }
           }
         } catch (error) {
           console.error('Error loading sale data:', error);

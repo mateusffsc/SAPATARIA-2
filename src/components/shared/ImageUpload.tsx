@@ -96,7 +96,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Images grid */}
       {images.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {images.map((image) => (
             <div key={image.id} className="relative group">
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">

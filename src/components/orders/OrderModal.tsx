@@ -36,17 +36,17 @@ const OrderModal: React.FC = () => {
     clients, 
     setClients, 
     services, 
+    technicians, 
     employees,
     paymentMethods,
     orders, 
     setOrders, 
-    setShowModal
+    setShowModal,
+    bankAccounts,
+    createFinancialTransaction
   } = useAppContext();
 
   const { showSuccess, showError } = useToast();
-
-  // Filter employees to get only technicians
-  const technicians = employees.filter(emp => emp.role === 'technician');
 
   const [orderData, setOrderData] = useState({
     number: formData.number || '',
@@ -105,6 +105,9 @@ const OrderModal: React.FC = () => {
     orderData.brand, 
     orderData.article
   );
+
+  // Get technicians from employees list (role = 'technician')
+  const availableTechnicians = employees.filter(emp => emp.role === 'technician');
 
   function getDefaultDeliveryDate(): string {
     const date = new Date();
@@ -270,6 +273,30 @@ const OrderModal: React.FC = () => {
         savedOrder = await OrderService.createOrder(orderPayload);
         setOrders(prev => [savedOrder, ...prev]);
         showSuccess(SUCCESS_MESSAGES.ORDER_CREATED);
+        
+        // Create financial transaction for entry payment
+        if (savedOrder.entryValue > 0) {
+          // Find the "Caixa Loja" account
+          const cashAccount = bankAccounts.find(acc => acc.name === 'Caixa Loja');
+          
+          try {
+            await createFinancialTransaction({
+              type: 'income',
+              amount: savedOrder.entryValue,
+              description: `Entrada OS ${savedOrder.number} - ${savedOrder.client}`,
+              category: 'Serviços',
+              reference_type: 'order',
+              reference_id: savedOrder.id,
+              reference_number: savedOrder.number,
+              payment_method: savedOrder.paymentMethodEntry,
+              date: savedOrder.date,
+              created_by: 'Admin',
+              destination_account_id: cashAccount?.id
+            });
+          } catch (error) {
+            console.error('Error creating financial transaction for entry payment:', error);
+          }
+        }
       }
 
       // Handle image uploads
@@ -537,12 +564,12 @@ const OrderModal: React.FC = () => {
                       handleServiceChange(index, 'serviceId', value);
                       if (selectedService) {
                         handleServiceChange(index, 'name', selectedService.name);
-                        handleServiceChange(index, 'price', selectedService.default_price);
+                        handleServiceChange(index, 'price', selectedService.defaultPrice);
                       }
                     }}
                     options={services.map(s => ({
                       value: s.id.toString(),
-                      label: `${s.name} - ${formatCurrency(s.default_price)}`
+                      label: `${s.name} - ${formatCurrency(s.defaultPrice)}`
                     }))}
                     error={errors[`service.${index}.name`]}
                     placeholder="Selecione um serviço"
@@ -561,7 +588,7 @@ const OrderModal: React.FC = () => {
                     label="Técnico"
                     value={service.technicianId}
                     onChange={(value) => handleServiceChange(index, 'technicianId', value)}
-                    options={technicians.map(tech => ({
+                    options={availableTechnicians.map(tech => ({
                       value: tech.id.toString(),
                       label: tech.name
                     }))}
@@ -764,7 +791,7 @@ const OrderModal: React.FC = () => {
           <ImageUpload
             images={orderData.images}
             onImagesChange={(images) => handleInputChange('images', images)}
-            maxImages={5}
+            maxImages={10}
           />
         </div>
       </div>

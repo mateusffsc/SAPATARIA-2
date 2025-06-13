@@ -7,7 +7,6 @@ import { ClientService } from '../../services/clientService';
 import { CashService } from '../../services/cashService';
 import { Client, ProductSale, ProductSaleItem } from '../../types';
 import { supabase } from '../../lib/supabase';
-import { FinancialService } from '../../services/financialService';
 import { 
   validateCPF, 
   validatePhone, 
@@ -34,7 +33,8 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
     productSales,
     loadProducts,
     setProducts,
-    bankAccounts
+    bankAccounts,
+    createFinancialTransaction
   } = useAppContext();
   
   const { showSuccess, showError } = useToast();
@@ -234,14 +234,6 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
         clientName = client?.name || '';
       }
 
-      // Find the Caixa Loja account
-      const caixaLojaAccount = bankAccounts.find(account => account.name === 'Caixa Loja');
-      if (!caixaLojaAccount) {
-        showError('Conta não encontrada', 'A conta "Caixa Loja" não foi encontrada. Verifique as configurações.');
-        setSaving(false);
-        return;
-      }
-
       // Prepare sale data
       const saleData = {
         sale_number: saleNumber,
@@ -292,21 +284,6 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
         throw itemsError;
       }
 
-      // Create financial transaction for the sale
-      await FinancialService.createTransaction({
-        type: 'income',
-        amount: finalTotal,
-        description: `Venda de produtos ${saleNumber} - ${clientName}`,
-        category: 'Produtos',
-        reference_type: 'sale',
-        reference_id: saleResult.id,
-        reference_number: saleNumber,
-        payment_method: paymentMethod,
-        date: saleData.date,
-        created_by: 'Admin',
-        destination_account_id: caixaLojaAccount.id
-      });
-
       // Update local state with new sale
       const newSale: ProductSale = {
         id: saleResult.id,
@@ -325,7 +302,12 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
         paymentMethod: saleResult.payment_method,
         status: saleResult.status as 'completed' | 'cancelled',
         createdBy: saleResult.created_by,
-        createdAt: saleResult.created_at
+        createdAt: saleResult.created_at,
+        paymentOption: saleResult.payment_option,
+        cashDiscount: saleResult.cash_discount,
+        installments: saleResult.installments,
+        installmentFee: saleResult.installment_fee,
+        originalAmount: saleResult.original_amount
       };
 
       setProductSales(prev => [newSale, ...prev]);
@@ -342,6 +324,28 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
         }
       });
       setProducts(updatedProducts);
+      
+      // Create financial transaction for the sale
+      try {
+        // Find the "Caixa Loja" account
+        const cashAccount = bankAccounts.find(acc => acc.name === 'Caixa Loja');
+        
+        await createFinancialTransaction({
+          type: 'income',
+          amount: finalTotal,
+          description: `Venda de Produtos ${saleNumber} - ${clientName}`,
+          category: 'Produtos',
+          reference_type: 'sale',
+          reference_id: saleResult.id,
+          reference_number: saleNumber,
+          payment_method: paymentMethod,
+          date: saleResult.date,
+          created_by: 'Admin',
+          destination_account_id: cashAccount?.id
+        });
+      } catch (error) {
+        console.error('Error creating financial transaction for sale:', error);
+      }
       
       // Reload products to update stock levels in the UI
       await loadProducts();

@@ -123,6 +123,40 @@ export class BankService {
     }
   }
 
+  // Find or create the "Caixa Loja" account
+  static async findOrCreateCashAccount(): Promise<BankAccount> {
+    try {
+      // Try to find the account first
+      const { data, error } = await supabase
+        .from('bank_accounts')
+        .select('*')
+        .eq('name', 'Caixa Loja')
+        .single();
+      
+      if (!error && data) {
+        return this.mapFromDatabase(data);
+      }
+      
+      // If not found, create it
+      const { data: newAccount, error: createError } = await supabase
+        .from('bank_accounts')
+        .insert({
+          name: 'Caixa Loja',
+          balance: 0,
+          is_active: true
+        })
+        .select()
+        .single();
+        
+      if (createError) throw createError;
+      
+      return this.mapFromDatabase(newAccount);
+    } catch (error) {
+      console.error('Error finding or creating cash account:', error);
+      throw error;
+    }
+  }
+
   private static mapFromDatabase(data: any): BankAccount {
     return {
       id: data.id,

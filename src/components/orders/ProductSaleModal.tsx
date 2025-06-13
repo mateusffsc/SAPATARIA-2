@@ -32,7 +32,8 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
     setProductSales,
     productSales,
     loadProducts,
-    setProducts
+    setProducts,
+    bankAccounts
   } = useAppContext();
   
   const { showSuccess, showError } = useToast();
@@ -232,6 +233,14 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
         clientName = client?.name || '';
       }
 
+      // Find the Caixa Loja account
+      const caixaLojaAccount = bankAccounts.find(account => account.name === 'Caixa Loja');
+      if (!caixaLojaAccount) {
+        showError('Conta não encontrada', 'A conta "Caixa Loja" não foi encontrada. Verifique as configurações.');
+        setSaving(false);
+        return;
+      }
+
       // Prepare sale data
       const saleData = {
         sale_number: saleNumber,
@@ -281,6 +290,21 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
       if (itemsError) {
         throw itemsError;
       }
+
+      // Create financial transaction for the sale
+      await FinancialService.createTransaction({
+        type: 'income',
+        amount: finalTotal,
+        description: `Venda de produtos ${saleNumber} - ${clientName}`,
+        category: 'Produtos',
+        reference_type: 'sale',
+        reference_id: saleResult.id,
+        reference_number: saleNumber,
+        payment_method: paymentMethod,
+        date: saleData.date,
+        created_by: 'Admin',
+        destination_account_id: caixaLojaAccount.id
+      });
 
       // Update local state with new sale
       const newSale: ProductSale = {

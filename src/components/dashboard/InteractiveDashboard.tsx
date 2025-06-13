@@ -459,10 +459,7 @@ const InteractiveDashboard: React.FC = () => {
                 );
               })}
             </div>
-          </div>
-
          
-              </div>
             </div>
           </div>
         </div>

@@ -197,7 +197,12 @@ export class OrderService {
       createdBy: data.created_by,
       createdAt: data.created_at,
       lastModifiedBy: data.last_modified_by,
-      lastModifiedAt: data.updated_at
+      lastModifiedAt: data.updated_at,
+      paymentOption: data.payment_option,
+      cashDiscount: data.cash_discount,
+      installments: data.installments,
+      installmentFee: data.installment_fee,
+      originalTotalValue: data.original_total_value
     };
   }
 
@@ -225,7 +230,12 @@ export class OrderService {
       status: order.status,
       payments: order.payments,
       last_modified_by: order.lastModifiedBy,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      payment_option: order.paymentOption,
+      cash_discount: order.cashDiscount,
+      installments: order.installments,
+      installment_fee: order.installmentFee,
+      original_total_value: order.originalTotalValue
     };
 
     console.log('Ordem mapeada para o banco:', mappedOrder); // Debug

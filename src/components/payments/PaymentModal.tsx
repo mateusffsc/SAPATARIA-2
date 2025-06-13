@@ -6,6 +6,7 @@ import { OrderService } from '../../services/orderService';
 import { validatePositiveNumber, validateEntryValue, ERROR_MESSAGES } from '../../utils/validators';
 import { useToast } from '../shared/ToastContainer';
 import { Order } from '../../types';
+import { FinancialService } from '../../services/financialService';
 
 interface PaymentData {
   value: number;
@@ -130,6 +131,21 @@ const PaymentModal: React.FC = () => {
         lastModifiedAt: new Date().toISOString()
       };
 
+      // First, create a financial transaction for this payment
+      await FinancialService.createTransaction({
+        type: 'income',
+        amount: payment.value,
+        description: `Pagamento ${payment.type} OS ${currentOrder.number} - ${currentOrder.client}`,
+        category: 'Serviços',
+        reference_type: 'order',
+        reference_id: currentOrder.id,
+        reference_number: currentOrder.number,
+        payment_method: payment.method,
+        date: payment.date,
+        created_by: 'Sistema'
+      });
+
+      // Then update the order
       await OrderService.update(currentOrder.id, updatedOrder);
       setOrders(orders.map(o => o.id === currentOrder.id ? { ...o, ...updatedOrder } : o));
       

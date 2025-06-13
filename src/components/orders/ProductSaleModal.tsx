@@ -31,7 +31,8 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
     generateSaleNumber,
     setProductSales,
     productSales,
-    loadProducts
+    loadProducts,
+    setProducts
   } = useAppContext();
   
   const { showSuccess, showError } = useToast();
@@ -304,6 +305,19 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
 
       setProductSales(prev => [newSale, ...prev]);
       
+      // Update product stock in local state
+      const updatedProducts = [...products];
+      items.forEach(item => {
+        const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
+        if (productIndex !== -1) {
+          updatedProducts[productIndex] = {
+            ...updatedProducts[productIndex],
+            stock: Math.max(0, updatedProducts[productIndex].stock - item.quantity)
+          };
+        }
+      });
+      setProducts(updatedProducts);
+      
       // Reload products to update stock levels in the UI
       await loadProducts();
       
@@ -535,8 +549,9 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
                       >
                         <option value="">Selecione um produto</option>
                         {filteredProducts.map(product => (
-                          <option key={product.id} value={product.id}>
+                          <option key={product.id} value={product.id} disabled={product.stock <= 0}>
                             {product.name} - {formatCurrency(product.price)} - Estoque: {product.stock}
+                            {product.stock <= 0 ? ' (Sem estoque)' : ''}
                           </option>
                         ))}
                       </select>

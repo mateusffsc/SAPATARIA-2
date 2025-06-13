@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { Package, Plus, Search, Edit, Trash2, AlertTriangle, Archive, ShoppingCart } from 'lucide-react';
+import { Package, Plus, Search, Edit, Trash2, AlertTriangle, Archive, ShoppingCart, RefreshCw } from 'lucide-react';
 import ProductForm from '../cadastros/products/ProductForm';
 import { useToast } from '../shared/ToastContainer';
 import StockPurchaseModal from './StockPurchaseModal';
 import { formatCurrency } from '../../utils/currencyUtils';
 
 const StockView: React.FC = () => {
-  const { products, setProducts, suppliers } = useAppContext();
+  const { products, setProducts, suppliers, loadProducts } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const { showSuccess, showError } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const filteredItems = products.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -87,11 +88,32 @@ const StockView: React.FC = () => {
     }
   };
 
+  const refreshStockData = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadProducts();
+      showSuccess('Estoque atualizado com sucesso!');
+    } catch (error) {
+      console.error('Error refreshing stock data:', error);
+      showError('Erro ao atualizar estoque', 'Não foi possível atualizar os dados do estoque.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Controle de Estoque</h1>
         <div className="flex space-x-3">
+          <button
+            onClick={refreshStockData}
+            className="bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-700 transition-colors"
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing ? 'Atualizando...' : 'Atualizar Estoque'}</span>
+          </button>
           <button
             onClick={() => setShowPurchaseModal(true)}
             className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors"
@@ -143,7 +165,7 @@ const StockView: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm text-gray-600">Valor Total em Estoque</p>
               <p className="text-2xl font-bold text-green-600">
-                R$ {totalStockValue.toFixed(2)}
+                {formatCurrency(totalStockValue)}
               </p>
             </div>
           </div>
@@ -194,8 +216,8 @@ const StockView: React.FC = () => {
                       {item.stock} unid.
                     </span>
                   </td>
-                  <td className="px-6 py-4">R$ {item.price.toFixed(2)}</td>
-                  <td className="px-6 py-4">R$ {(item.stock * item.price).toFixed(2)}</td>
+                  <td className="px-6 py-4">{formatCurrency(item.price)}</td>
+                  <td className="px-6 py-4">{formatCurrency(item.stock * item.price)}</td>
                   <td className="px-6 py-4">{item.supplier}</td>
                   <td className="px-6 py-4">{new Date(item.createdAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4">

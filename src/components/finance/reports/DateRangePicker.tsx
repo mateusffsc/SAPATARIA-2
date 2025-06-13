@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, ChevronDown } from 'lucide-react';
+import { getCurrentDate } from '../../../utils/formatters';
 
 interface DateRangePickerProps {
   startDate: string;
@@ -24,23 +25,29 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   ];
 
   const handlePresetChange = (newPreset: string) => {
-    const today = new Date();
+    // Get current date with correct timezone
+    const today = getCurrentDate();
+    
     let start = '';
     let end = '';
 
     switch (newPreset) {
       case 'today':
-        start = end = today.toISOString().split('T')[0];
+        start = end = today;
         break;
       case 'week':
         const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay());
+        const dayOfWeek = weekStart.getDay();
+        const diff = weekStart.getDate() - dayOfWeek;
+        weekStart.setDate(diff);
         start = weekStart.toISOString().split('T')[0];
-        end = today.toISOString().split('T')[0];
+        end = today;
         break;
       case 'month':
-        start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-        end = today.toISOString().split('T')[0];
+        const monthStart = new Date(today);
+        monthStart.setDate(1);
+        start = monthStart.toISOString().split('T')[0];
+        end = today;
         break;
       case 'custom':
         setShowCustom(true);

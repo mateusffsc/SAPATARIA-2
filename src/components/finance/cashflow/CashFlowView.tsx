@@ -5,12 +5,13 @@ import { FinancialService, FinancialTransaction, CashFlowData } from '../../../s
 import { CashService } from '../../../services/cashService';
 import { formatCurrency } from '../../../utils/currencyUtils';
 import { useAppContext } from '../../../context/AppContext';
+import { getCurrentDate } from '../../../utils/formatters';
 
 const CashFlowView: React.FC = () => {
   const { bankAccounts, setModalType, setShowModal } = useAppContext();
   
-  // Get current date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
+  // Get current date in YYYY-MM-DD format with correct timezone
+  const today = getCurrentDate();
   
   const [dateRange, setDateRange] = useState({
     startDate: '2025-06-01',
@@ -238,16 +239,14 @@ const CashFlowView: React.FC = () => {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <DollarSign className="w-6 h-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600">Saldo em Caixa</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {formatCurrency(balance?.cash || 0)}
-              </p>
-            </div>
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <DollarSign className="w-6 h-6 text-blue-600" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-600">Saldo em Caixa</p>
+            <p className="text-2xl font-bold text-blue-600">
+              {formatCurrency(balance?.cash || 0)}
+            </p>
           </div>
         </div>
 

@@ -9,6 +9,7 @@ import { useToast } from '../../../components/shared/ToastContainer';
 import { OrderService } from '../../../services/orderService';
 import { ProductSaleService } from '../../../services/productSaleService';
 import { useAppContext } from '../../../context/AppContext';
+import { getCurrentDate } from '../../../utils/formatters';
 
 interface FilterState {
   dateRange: {
@@ -31,8 +32,8 @@ const FinancialReportsView: React.FC = () => {
   const { showSuccess, showError } = useToast();
   const { setOrders, setProductSales, setCurrentView, setModalType, setFormData, setShowModal } = useAppContext();
 
-  // Get current date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
+  // Get current date in YYYY-MM-DD format with correct timezone
+  const today = getCurrentDate();
 
   const [filters, setFilters] = useState<FilterState>({
     dateRange: {
@@ -187,8 +188,8 @@ const FinancialReportsView: React.FC = () => {
   };
 
   const clearFilters = () => {
-    // Get current date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
+    // Get current date in YYYY-MM-DD format with correct timezone
+    const today = getCurrentDate();
     
     setFilters({
       dateRange: {

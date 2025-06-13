@@ -41,13 +41,21 @@ const formatPhone = (phone: string): string => {
 
 const formatDate = (date: string | Date): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('pt-BR');
+  return dateObj.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 };
 
 export const formatRelativeDate = (date: string | Date): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
-  const diffInMs = now.getTime() - dateObj.getTime();
+  
+  // Ensure both dates are in the same timezone for comparison
+  const dateStr = dateObj.toISOString().split('T')[0];
+  const nowStr = now.toISOString().split('T')[0];
+  
+  const dateInBrazil = new Date(dateStr + 'T12:00:00-03:00');
+  const nowInBrazil = new Date(nowStr + 'T12:00:00-03:00');
+  
+  const diffInMs = nowInBrazil.getTime() - dateInBrazil.getTime();
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
   
   if (diffInDays === 0) return 'Hoje';
@@ -59,7 +67,7 @@ export const formatRelativeDate = (date: string | Date): string => {
 
 const formatDateTime = (date: string | Date): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleString('pt-BR');
+  return dateObj.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 };
 
 export const highlightSearchTerm = (text: string, searchTerm: string): string => {
@@ -69,10 +77,20 @@ export const highlightSearchTerm = (text: string, searchTerm: string): string =>
   return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
 };
 
-// Get current date in ISO format (YYYY-MM-DD)
+// Get current date in ISO format (YYYY-MM-DD) with Brazil timezone
 export const getCurrentDate = (): string => {
+  // Create date with Brazil timezone offset
   const now = new Date();
-  return now.toISOString().split('T')[0];
+  
+  // Get the date in Brazil timezone
+  const brazilDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  
+  // Format as YYYY-MM-DD
+  const year = brazilDate.getFullYear();
+  const month = String(brazilDate.getMonth() + 1).padStart(2, '0');
+  const day = String(brazilDate.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
 };
 
 // Format date to locale string with correct timezone

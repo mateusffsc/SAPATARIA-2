@@ -75,6 +75,16 @@ export class ClientService {
     }
   }
 
+  // Helper method for creating clients with proper error handling
+  static async createClient(client: Omit<Client, 'id'>): Promise<Client> {
+    try {
+      return await this.create(client);
+    } catch (error) {
+      console.error('Error creating client:', error);
+      throw new Error('Falha ao criar cliente. Verifique os dados e tente novamente.');
+    }
+  }
+
   static async update(id: number, client: Partial<Client>): Promise<Client> {
     try {
       console.log('Updating client:', id, client);

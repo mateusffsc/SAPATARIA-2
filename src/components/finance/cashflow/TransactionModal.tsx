@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../../context/AppContext';
 import { X } from 'lucide-react';
 import { formatCurrency } from '../../../utils/currencyUtils';
-import { BankAccount } from '../../../types';
+import { getCurrentDate } from '../../../utils/formatters';
 
 const TransactionModal: React.FC = () => {
   const { 
@@ -13,8 +13,8 @@ const TransactionModal: React.FC = () => {
     paymentMethods
   } = useAppContext();
 
-  // Get current date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
+  // Get current date in YYYY-MM-DD format with correct timezone
+  const today = getCurrentDate();
 
   const [transactionForm, setTransactionForm] = useState({
     type: 'income' as 'income' | 'expense' | 'transfer',

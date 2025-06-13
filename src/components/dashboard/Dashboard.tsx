@@ -3,29 +3,45 @@ import InteractiveDashboard from './InteractiveDashboard';
 import CashRegisterWidget from '../finance/cashregister/CashRegisterWidget';
 import DailyTransactions from './DailyTransactions';
 import { useAuth } from '../../context/AuthContext';
-import { getCurrentDate } from '../../utils/formatters';
+import { getCurrentDate, formatLocalDate } from '../../utils/formatters';
+import { Calendar } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { hasPermission } = useAuth();
   const [currentDate, setCurrentDate] = useState('');
+  const [isoDate, setIsoDate] = useState('');
   
   useEffect(() => {
     // Set current date when component mounts
-    setCurrentDate(new Date().toLocaleDateString('pt-BR', {
+    const today = new Date();
+    
+    // Format for display (DD/MM/YYYY)
+    setCurrentDate(today.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       timeZone: 'America/Sao_Paulo'
     }));
+    
+    // Get ISO date for internal use
+    setIsoDate(getCurrentDate());
   }, []);
   
   return (
     <div className="space-y-6">
       {/* Current Date Display */}
       <div className="bg-white p-4 rounded-lg shadow">
-        <p className="text-gray-600">
-          Data atual do sistema: <span className="font-medium">{currentDate}</span>
-        </p>
+        <div className="flex items-center">
+          <Calendar className="w-5 h-5 text-blue-600 mr-2" />
+          <div>
+            <p className="text-gray-600">
+              Data atual do sistema: <span className="font-medium">{currentDate}</span>
+            </p>
+            <p className="text-xs text-gray-500">
+              Formato ISO: {isoDate}
+            </p>
+          </div>
+        </div>
       </div>
       
       {/* Cash Register Widget - Only show if user has cash register permissions */}

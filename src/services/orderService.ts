@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Order } from '../types';
+import { getCurrentDate } from '../utils/formatters';
 
 export class OrderService {
   static async getAll(): Promise<Order[]> {
@@ -157,6 +158,16 @@ export class OrderService {
     const lastNumber = data[0].number;
     const numberPart = parseInt(lastNumber.split('-')[1]);
     return `OS-${String(numberPart + 1).padStart(3, '0')}`;
+  }
+
+  // Helper method for creating orders with correct date handling
+  static async createOrder(orderData: any): Promise<Order> {
+    // Ensure date is set to today with correct timezone
+    if (!orderData.date) {
+      orderData.date = getCurrentDate();
+    }
+    
+    return this.create(orderData);
   }
 
   private static mapFromDatabase(data: any): Order {

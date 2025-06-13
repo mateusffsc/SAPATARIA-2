@@ -6,12 +6,13 @@ import { CashService } from '../../services/cashService';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../shared/ToastContainer';
+import { getCurrentDate } from '../../utils/formatters';
 
 const FinancialLowView: React.FC = () => {
   const { showError } = useToast();
   
-  // Today's date only
-  const today = new Date().toISOString().split('T')[0];
+  // Today's date only with correct timezone
+  const today = getCurrentDate();
   
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -228,7 +229,7 @@ const FinancialLowView: React.FC = () => {
               {transactions.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(transaction.created_at).toLocaleTimeString('pt-BR')}
+                    {new Date(transaction.created_at).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

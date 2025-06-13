@@ -1,23 +1,21 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2, Eye } from 'lucide-react';
 import { ImageService, ServiceImage } from '../../services/imageService';
+import MobileButton from './MobileButton';
 
 interface ImageUploadProps {
-  orderId?: number;
-  existingImages?: ServiceImage[];
-  onImagesChange?: (images: ServiceImage[]) => void;
+  images: ServiceImage[];
+  onImagesChange: (images: ServiceImage[]) => void;
   maxImages?: number;
   disabled?: boolean;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
-  orderId,
-  existingImages = [],
+  images,
   onImagesChange,
   maxImages = 10,
   disabled = false
 }) => {
-  const [images, setImages] = useState<ServiceImage[]>(existingImages);
   const [uploading, setUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,31 +33,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     setUploading(true);
 
     try {
-      // Compress images before upload
-      const compressedFiles = await Promise.all(
-        files.map(file => ImageService.compressImage(file))
-      );
-
-      if (orderId) {
-        // Upload to server
-        const uploadedImages = await ImageService.uploadServiceImages(orderId, compressedFiles);
-        const newImages = [...images, ...uploadedImages];
-        setImages(newImages);
-        onImagesChange?.(newImages);
-      } else {
-        // Create preview URLs for new images
-        const previewImages: ServiceImage[] = compressedFiles.map((file, index) => ({
-          id: `preview-${Date.now()}-${index}`,
-          url: URL.createObjectURL(file),
-          path: '',
-          fileName: file.name,
-          uploadedAt: new Date().toISOString()
-        }));
-        
-        const newImages = [...images, ...previewImages];
-        setImages(newImages);
-        onImagesChange?.(newImages);
-      }
+      // Create preview URLs for new images
+      const previewImages: ServiceImage[] = files.map((file, index) => ({
+        id: `preview-${Date.now()}-${index}`,
+        url: URL.createObjectURL(file),
+        path: '',
+        fileName: file.name,
+        uploadedAt: new Date().toISOString()
+      }));
+      
+      const newImages = [...images, ...previewImages];
+      onImagesChange(newImages);
     } catch (error) {
       console.error('Error uploading images:', error);
       alert('Erro ao fazer upload das imagens');
@@ -71,19 +55,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     }
   };
 
-  const handleRemoveImage = async (imageId: string, imagePath: string) => {
-    try {
-      if (orderId && imagePath) {
-        await ImageService.deleteImage(imageId, imagePath);
-      }
-      
-      const newImages = images.filter(img => img.id !== imageId);
-      setImages(newImages);
-      onImagesChange?.(newImages);
-    } catch (error) {
-      console.error('Error removing image:', error);
-      alert('Erro ao remover imagem');
-    }
+  const handleRemoveImage = (imageId: string) => {
+    const newImages = images.filter(img => img.id !== imageId);
+    onImagesChange(newImages);
   };
 
   const openFileDialog = () => {
@@ -98,19 +72,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         </label>
         
         {images.length < maxImages && !disabled && (
-          <button
-            type="button"
+          <MobileButton
+            variant="secondary"
+            size="sm"
             onClick={openFileDialog}
             disabled={uploading}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            icon={uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
           >
-            {uploading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Upload className="w-4 h-4 mr-2" />
-            )}
             {uploading ? 'Enviando...' : 'Adicionar Fotos'}
-          </button>
+          </MobileButton>
         )}
       </div>
 
@@ -152,7 +122,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   {!disabled && (
                     <button
                       type="button"
-                      onClick={() => handleRemoveImage(image.id, image.path)}
+                      onClick={() => handleRemoveImage(image.id)}
                       className="p-2 bg-white rounded-full text-gray-700 hover:text-red-600 transition-colors"
                       title="Remover"
                     >
@@ -165,9 +135,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               {/* Image info */}
               <div className="mt-2">
                 <p className="text-xs text-gray-500 truncate">{image.fileName}</p>
-                <p className="text-xs text-gray-400">
-                  {new Date(image.uploadedAt).toLocaleDateString()}
-                </p>
               </div>
             </div>
           ))}

@@ -406,8 +406,8 @@ const OrdersList: React.FC = () => {
                 </div>
                 <div>
                   <div>
-                    <span className="text-gray-500">Abertura:</span>
-                    <p className="font-medium">{formatRelativeDate(order.date)}</p>
+                    <span className="text-gray-500">Cadastro:</span>
+                    <p className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">Entrega:</span>
@@ -494,7 +494,7 @@ const OrdersList: React.FC = () => {
                 >
                   Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Abertura</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cadastro</th>
                 <th 
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('delivery')}
@@ -590,8 +590,8 @@ const OrdersList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div>
-                        <div>{new Date(order.date).toLocaleDateString()}</div>
-                        <div className="text-xs text-gray-500">{formatRelativeDate(order.date)}</div>
+                        <div>{new Date(order.createdAt).toLocaleDateString()}</div>
+                        <div className="text-xs text-gray-500">{formatRelativeDate(order.createdAt)}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Filter, Download, FileText, DollarSign, TrendingUp, TrendingDown, RefreshCw, X, ShoppingBag, ArrowRight } from 'lucide-react';
 import { FinancialService, FinancialTransaction } from '../../../services/financialService';
 import { formatCurrency } from '../../../utils/currencyUtils';
+import { getCurrentDate } from '../../../utils/formatters';
 import DateRangePicker from './DateRangePicker';
 import TransactionTable from './TransactionTable';
 import ExportModal from './ExportModal';
@@ -33,8 +34,8 @@ const FinancialReportsView: React.FC = () => {
 
   const [filters, setFilters] = useState<FilterState>({
     dateRange: {
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date().toISOString().split('T')[0],
+      startDate: getCurrentDate(),
+      endDate: getCurrentDate(),
       preset: 'today'
     },
     movementType: 'all',

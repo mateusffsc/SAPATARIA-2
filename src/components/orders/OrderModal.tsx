@@ -249,19 +249,29 @@ const OrderModal: React.FC = () => {
 
     setSaving(true);
     try {
-      let clientId = orderData.clientId;
+      let finalClientId = orderData.clientId;
+      let finalClientName = '';
 
       // Create new client if needed
       if (orderData.isNewClient) {
         const newClient = await ClientService.createClient(orderData.newClient);
-        clientId = newClient.id;
+        finalClientId = newClient.id.toString();
+        finalClientName = newClient.name;
         setClients(prev => [...prev, newClient]);
+      } else {
+        // Get existing client name
+        const existingClient = clients.find(c => c.id.toString() === orderData.clientId);
+        if (existingClient) {
+          finalClientName = existingClient.name;
+        } else {
+          throw new Error('Cliente selecionado não encontrado');
+        }
       }
 
       const orderPayload = {
         ...orderData,
-        client_id: clientId,
-        client_name: orderData.isNewClient ? orderData.newClient.name : clients.find(c => c.id === parseInt(clientId))?.name || '',
+        clientId: parseInt(finalClientId),
+        client: finalClientName, // This maps to client_name in the database
         services: orderData.services.map(service => ({
           serviceId: service.serviceId,
           name: service.name,

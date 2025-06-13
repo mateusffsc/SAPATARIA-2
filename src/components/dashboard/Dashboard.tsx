@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
               Data atual do sistema: <span className="font-medium">{currentDate}</span>
             </p>
             <p className="text-xs text-gray-500">
-              Formato ISO: {isoDate}
+       
             </p>
           </div>
         </div>

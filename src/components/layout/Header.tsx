@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, Menu } from 'lucide-react';
+import { LogOut, Menu, Calendar } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
 const Header: React.FC = () => {
@@ -18,6 +18,15 @@ const Header: React.FC = () => {
     }
   };
 
+  // Get current date with correct timezone
+  const currentDate = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'America/Sao_Paulo'
+  });
+
   return (
     <header className="bg-white shadow-sm border-b px-4 lg:px-6 py-4 flex-none">
       <div className="flex items-center justify-between max-w-[1920px] mx-auto">
@@ -25,13 +34,9 @@ const Header: React.FC = () => {
           <h1 className="text-lg lg:text-xl font-semibold text-gray-900 truncate">
             Sapataria Guimarães
           </h1>
-          <p className="text-xs lg:text-sm text-gray-600 hidden sm:block truncate">
-            {new Date().toLocaleDateString('pt-BR', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
+          <p className="text-xs lg:text-sm text-gray-600 hidden sm:flex items-center truncate">
+            <Calendar className="w-4 h-4 mr-1 text-gray-400" />
+            {currentDate}
           </p>
         </div>
         

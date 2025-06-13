@@ -68,3 +68,20 @@ export const highlightSearchTerm = (text: string, searchTerm: string): string =>
   const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
 };
+
+// Get current date in ISO format (YYYY-MM-DD)
+export const getCurrentDate = (): string => {
+  const now = new Date();
+  return now.toISOString().split('T')[0];
+};
+
+// Format date to locale string with correct timezone
+export const formatLocalDate = (date: string | Date): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('pt-BR', { 
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};

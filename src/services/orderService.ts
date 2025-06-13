@@ -206,7 +206,7 @@ export class OrderService {
       number: order.number,
       date: order.date,
       client_id: order.clientId,
-      client_name: order.client,
+      client_name: order.client || (order as any).client_name,
       article: order.article,
       brand: order.brand,
       model: order.model,

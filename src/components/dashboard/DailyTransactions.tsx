@@ -4,6 +4,7 @@ import { FinancialService, FinancialTransaction } from '../../services/financial
 import { formatCurrency } from '../../utils/currencyUtils';
 import { useToast } from '../shared/ToastContainer';
 import { useAppContext } from '../../context/AppContext';
+import { getCurrentDate } from '../../utils/formatters';
 
 const DailyTransactions: React.FC = () => {
   const { showError } = useToast();
@@ -18,7 +19,7 @@ const DailyTransactions: React.FC = () => {
   });
 
   // Get today's date
-  const today = new Date().toISOString().split('T')[0];
+  const today = getCurrentDate();
 
   const loadData = async () => {
     try {

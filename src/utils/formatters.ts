@@ -79,11 +79,10 @@ export const highlightSearchTerm = (text: string, searchTerm: string): string =>
 
 // Get current date in ISO format (YYYY-MM-DD) with Brazil timezone
 export const getCurrentDate = (): string => {
-  // Create date with Brazil timezone offset
-  const now = new Date();
-  
-  // Get the date in Brazil timezone
-  const brazilDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  // Create date object for Brazil timezone
+  const options = { timeZone: 'America/Sao_Paulo' };
+  const brazilTime = new Date().toLocaleString('en-US', options);
+  const brazilDate = new Date(brazilTime);
   
   // Format as YYYY-MM-DD
   const year = brazilDate.getFullYear();

@@ -464,6 +464,7 @@ const OrderModal: React.FC = () => {
               value={orderData.model}
               onChange={(value) => handleInputChange('model', value)}
               suggestions={modelSuggestions}
+              field="model"
             />
             <FormInput
               label="Cor"
@@ -475,6 +476,7 @@ const OrderModal: React.FC = () => {
               value={orderData.size}
               onChange={(value) => handleInputChange('size', value)}
               suggestions={sizeSuggestions}
+              field="size"
             />
             <FormInput
               label="Número de Série"

@@ -15,8 +15,13 @@ const Dashboard: React.FC = () => {
     // Set current date when component mounts
     const today = new Date();
     
+    // Get the date in Brazil timezone
+    const options = { timeZone: 'America/Sao_Paulo' };
+    const brazilTime = today.toLocaleString('en-US', options);
+    const brazilDate = new Date(brazilTime);
+    
     // Format for display (DD/MM/YYYY)
-    setCurrentDate(today.toLocaleDateString('pt-BR', {
+    setCurrentDate(brazilDate.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

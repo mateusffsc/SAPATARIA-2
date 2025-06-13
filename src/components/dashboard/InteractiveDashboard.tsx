@@ -461,11 +461,7 @@ const InteractiveDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <h4 className="font-medium text-gray-900 mb-2">Indicadores</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                
+         
               </div>
             </div>
           </div>

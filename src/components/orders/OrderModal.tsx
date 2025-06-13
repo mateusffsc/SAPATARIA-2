@@ -308,7 +308,7 @@ const OrderModal: React.FC = () => {
             variant="primary"
             onClick={handleSubmit}
             disabled={saving}
-            icon={Save}
+            icon={<Save className="w-4 h-4" />}
           >
             {saving ? 'Salvando...' : 'Salvar'}
           </MobileButton>
@@ -499,7 +499,7 @@ const OrderModal: React.FC = () => {
               variant="secondary"
               size="sm"
               onClick={addService}
-              icon={Plus}
+              icon={<Plus className="w-4 h-4" />}
             >
               Adicionar Serviço
             </MobileButton>
@@ -519,7 +519,7 @@ const OrderModal: React.FC = () => {
                       variant="danger"
                       size="sm"
                       onClick={() => removeService(index)}
-                      icon={Trash2}
+                      icon={<Trash2 className="w-4 h-4" />}
                     >
                       Remover
                     </MobileButton>

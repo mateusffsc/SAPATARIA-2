@@ -59,6 +59,7 @@ interface AppContextType {
   };
   createFinancialTransaction: (transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   loadFinancialData: () => Promise<void>;
+  loadProducts: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -292,13 +293,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const loadProducts = async () => {
     try {
+      console.log('Loading products...');
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('is_active', true)
         .order('name');
       
+      if (error) {
+        console.error('Error in Supabase query:', error);
+        throw error;
+      }
+      
       if (data) {
+        console.log(`Loaded ${data.length} products`);
         setProducts(data.map(p => ({
           id: p.id,
           name: p.name,
@@ -489,6 +497,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     todayCashFlow,
     loadFinancialData,
     createFinancialTransaction,
+    loadProducts,
     currentUser: { name: 'Admin' },
     generateOrderNumber: async () => {
       try {

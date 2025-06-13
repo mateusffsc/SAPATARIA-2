@@ -12,7 +12,8 @@ import {
   validatePhone, 
   validateEmail, 
   validateName,
-  ERROR_MESSAGES
+  ERROR_MESSAGES,
+  SUCCESS_MESSAGES 
 } from '../../utils/validators';
 import { useToast } from '../shared/ToastContainer';
 
@@ -29,7 +30,8 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
     setClients, 
     generateSaleNumber,
     setProductSales,
-    productSales
+    productSales,
+    loadProducts
   } = useAppContext();
   
   const { showSuccess, showError } = useToast();
@@ -301,6 +303,9 @@ const ProductSaleModal: React.FC<ProductSaleModalProps> = ({ onClose, onSave }) 
       };
 
       setProductSales(prev => [newSale, ...prev]);
+      
+      // Reload products to update stock levels in the UI
+      await loadProducts();
       
       showSuccess('Venda finalizada com sucesso!', `Venda ${saleNumber} registrada com sucesso.`);
       onClose();

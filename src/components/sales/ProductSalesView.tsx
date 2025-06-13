@@ -7,6 +7,7 @@ import { ProductSaleService } from '../../services/productSaleService';
 import { ProductSale } from '../../types';
 import { useToast } from '../shared/ToastContainer';
 import LoadingSpinner from '../shared/LoadingSpinner';
+import { formatSaoPauloDate } from '../../utils/dateUtils';
 
 const ProductSalesView: React.FC = () => {
   const { 
@@ -235,7 +236,7 @@ const ProductSalesView: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600">Data</p>
-                  <p className="font-medium">{formatRelativeDate(sale.date)}</p>
+                  <p className="font-medium">{formatSaoPauloDate(sale.date)}</p>
                 </div>
               </div>
 
@@ -349,7 +350,7 @@ const ProductSalesView: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div>
-                        <div>{new Date(sale.date).toLocaleDateString()}</div>
+                        <div>{formatSaoPauloDate(sale.date)}</div>
                         <div className="text-xs text-gray-500">{formatRelativeDate(sale.date)}</div>
                       </div>
                     </td>

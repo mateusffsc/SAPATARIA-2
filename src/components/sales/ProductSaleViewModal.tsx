@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Package, User, Calendar, DollarSign, CreditCard } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { formatCurrency } from '../../utils/formatters';
+import { formatSaoPauloDate } from '../../utils/dateUtils';
 
 const ProductSaleViewModal: React.FC = () => {
   const { formData: sale, setShowModal } = useAppContext();
@@ -101,7 +102,7 @@ const ProductSaleViewModal: React.FC = () => {
               <div className="flex items-center justify-between">
                 <Calendar className="w-5 h-5 text-purple-600" />
                 <span className="text-lg font-bold text-purple-600">
-                  {new Date(sale.date).toLocaleDateString('pt-BR')}
+                  {formatSaoPauloDate(sale.date)}
                 </span>
               </div>
               <p className="text-sm text-purple-600 mt-1">Data da Venda</p>
@@ -211,7 +212,7 @@ const ProductSaleViewModal: React.FC = () => {
               <div>
                 <span className="text-gray-600">Data de Criação:</span>
                 <p className="font-medium">
-                  {new Date(sale.createdAt).toLocaleString('pt-BR')}
+                  {formatSaoPauloDate(sale.createdAt)}
                 </p>
               </div>
             </div>

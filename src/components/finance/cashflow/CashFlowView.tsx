@@ -6,6 +6,7 @@ import { CashService } from '../../../services/cashService';
 import { formatCurrency } from '../../../utils/currencyUtils';
 import { useAppContext } from '../../../context/AppContext';
 import { getCurrentDate } from '../../../utils/formatters';
+import { formatSaoPauloDate, toSaoPauloDate } from '../../../utils/dateUtils';
 
 const CashFlowView: React.FC = () => {
   const { bankAccounts, setModalType, setShowModal } = useAppContext();
@@ -239,14 +240,16 @@ const CashFlowView: React.FC = () => {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <DollarSign className="w-6 h-6 text-blue-600" />
-          </div>
-          <div className="ml-4">
-            <p className="text-sm text-gray-600">Saldo em Caixa</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {formatCurrency(balance?.cash || 0)}
-            </p>
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <DollarSign className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm text-gray-600">Saldo em Caixa</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {formatCurrency(balance?.cash || 0)}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -351,10 +354,13 @@ const CashFlowView: React.FC = () => {
                   ? bankAccounts.find(a => a.id === transaction.destination_account_id)?.name 
                   : '';
                 
+                // Convert to São Paulo time for display
+                const transactionDate = toSaoPauloDate(new Date(transaction.date));
+                
                 return (
                   <tr key={transaction.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      {new Date(transaction.date).toLocaleDateString('pt-BR')}
+                      {formatSaoPauloDate(transaction.date)}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -380,14 +386,16 @@ const CashFlowView: React.FC = () => {
                         transaction.type === 'income' ? destinationAccount : sourceAccount
                       )}
                     </td>
-                    <td className={`px-6 py-4 font-medium ${
-                      transaction.type === 'income' ? 'text-green-600' : 
-                      transaction.type === 'expense' ? 'text-red-600' : 
-                      'text-blue-600'
-                    }`}>
-                      {transaction.type === 'income' ? '+' : 
-                       transaction.type === 'expense' ? '-' : 
-                       ''} {formatCurrency(Math.abs(transaction.amount))}
+                    <td className="px-6 py-4">
+                      <span className={
+                        transaction.type === 'income' ? 'text-green-600 font-medium' : 
+                        transaction.type === 'expense' ? 'text-red-600 font-medium' : 
+                        'text-blue-600 font-medium'
+                      }>
+                        {transaction.type === 'income' ? '+' : 
+                         transaction.type === 'expense' ? '-' : 
+                         ''} {formatCurrency(Math.abs(transaction.amount))}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       {transaction.reference_type === 'manual' && (

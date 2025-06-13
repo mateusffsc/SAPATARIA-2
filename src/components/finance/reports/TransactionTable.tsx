@@ -3,8 +3,7 @@ import { ArrowUpCircle, ArrowDownCircle, Edit, Trash2, ExternalLink, ArrowRight 
 import { FinancialTransaction } from '../../../services/financialService';
 import { formatCurrency } from '../../../utils/currencyUtils';
 import { useAppContext } from '../../../context/AppContext';
-import { formatSaoPauloDate } from '../../../utils/dateUtils';
-import { toSaoPauloDate } from '../../../utils/dateUtils';
+import { formatSaoPauloDate, toSaoPauloDate } from '../../../utils/dateUtils';
 
 interface TransactionTableProps {
   transactions: FinancialTransaction[];
@@ -167,7 +166,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Data/Hora
+                Data
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Tipo
@@ -205,9 +204,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <div>
                     <div>{formatSaoPauloDate(transaction.date)}</div>
-                    <div className="text-xs text-gray-500">
-                      {formatDateTime(transaction.created_at)}
-                    </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

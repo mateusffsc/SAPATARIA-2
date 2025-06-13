@@ -53,8 +53,8 @@ export class FinancialService {
     const endDateObj = getSaoPauloEndOfDay(endDate);
     
     // Format as ISO strings for database query
-    const startISO = startDateObj.toISOString().split('T')[0];
-    const endISO = endDateObj.toISOString().split('T')[0];
+    const startISO = startDateObj ? startDateObj.toISOString().split('T')[0] : startDate;
+    const endISO = endDateObj ? endDateObj.toISOString().split('T')[0] : endDate;
     
     console.log(`Fetching transactions from ${startISO} to ${endISO}`);
     
@@ -76,6 +76,11 @@ export class FinancialService {
       ? Math.abs(transaction.amount) 
       : -Math.abs(transaction.amount);
 
+    console.log('Creating financial transaction:', {
+      ...transaction,
+      amount
+    });
+
     const { data, error } = await supabase
       .from('financial_transactions')
       .insert({
@@ -95,8 +100,12 @@ export class FinancialService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error creating transaction:', error);
+      throw error;
+    }
 
+    console.log('Transaction created successfully:', data);
     return this.mapFromDatabase(data);
   }
 

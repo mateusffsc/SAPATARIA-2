@@ -105,7 +105,7 @@ const OrderModal: React.FC = () => {
   );
 
   function getDefaultDeliveryDate(): string {
-    const date = new Date(getCurrentDate());
+    const date = new Date();
     date.setDate(date.getDate() + 7);
     return date.toISOString().split('T')[0];
   }
@@ -171,20 +171,7 @@ const OrderModal: React.FC = () => {
   const handleServiceChange = (index: number, field: string, value: any) => {
     const updatedServices = [...orderData.services];
     updatedServices[index] = { ...updatedServices[index], [field]: value };
-    
-    // If changing serviceId, update name and price from the selected service
-    if (field === 'serviceId') {
-      const selectedService = services.find(s => s.id.toString() === value);
-      if (selectedService) {
-        updatedServices[index].name = selectedService.name;
-        updatedServices[index].price = selectedService.defaultPrice;
-      }
-    }
-    
-    setOrderData(prev => ({
-      ...prev,
-      services: updatedServices
-    }));
+    setOrderData(prev => ({ ...prev, services: updatedServices }));
   };
 
   const addService = () => {
@@ -249,29 +236,31 @@ const OrderModal: React.FC = () => {
 
     setSaving(true);
     try {
-      let finalClientId = orderData.clientId;
-      let finalClientName = '';
+      let clientId = orderData.clientId;
+      let clientName = '';
 
       // Create new client if needed
       if (orderData.isNewClient) {
         const newClient = await ClientService.createClient(orderData.newClient);
-        finalClientId = newClient.id.toString();
-        finalClientName = newClient.name;
+        clientId = newClient.id;
+        clientName = newClient.name;
         setClients(prev => [...prev, newClient]);
       } else {
-        // Get existing client name
-        const existingClient = clients.find(c => c.id.toString() === orderData.clientId);
-        if (existingClient) {
-          finalClientName = existingClient.name;
+        // Find the selected client to get their name
+        const selectedClient = clients.find(c => c.id === parseInt(clientId as string));
+        if (selectedClient) {
+          clientName = selectedClient.name;
         } else {
-          throw new Error('Cliente selecionado não encontrado');
+          showError('Erro ao encontrar cliente', 'O cliente selecionado não foi encontrado.');
+          setSaving(false);
+          return;
         }
       }
 
       const orderPayload = {
         ...orderData,
-        clientId: parseInt(finalClientId),
-        client: finalClientName, // This maps to client_name in the database
+        client_id: clientId,
+        client_name: clientName,
         services: orderData.services.map(service => ({
           serviceId: service.serviceId,
           name: service.name,
@@ -487,7 +476,6 @@ const OrderModal: React.FC = () => {
               value={orderData.model}
               onChange={(value) => handleInputChange('model', value)}
               suggestions={modelSuggestions}
-              field="model"
             />
             <FormInput
               label="Cor"
@@ -499,7 +487,6 @@ const OrderModal: React.FC = () => {
               value={orderData.size}
               onChange={(value) => handleInputChange('size', value)}
               suggestions={sizeSuggestions}
-              field="size"
             />
             <FormInput
               label="Número de Série"
@@ -556,11 +543,16 @@ const OrderModal: React.FC = () => {
                     label="Serviço"
                     value={service.serviceId}
                     onChange={(value) => {
+                      const selectedService = services.find(s => s.id.toString() === value);
                       handleServiceChange(index, 'serviceId', value);
+                      if (selectedService) {
+                        handleServiceChange(index, 'name', selectedService.name);
+                        handleServiceChange(index, 'price', selectedService.default_price);
+                      }
                     }}
                     options={services.map(s => ({
                       value: s.id.toString(),
-                      label: `${s.name} - ${formatCurrency(s.defaultPrice)}`
+                      label: `${s.name} - ${formatCurrency(s.default_price)}`
                     }))}
                     error={errors[`service.${index}.name`]}
                     placeholder="Selecione um serviço"
@@ -782,7 +774,7 @@ const OrderModal: React.FC = () => {
           <ImageUpload
             images={orderData.images}
             onImagesChange={(images) => handleInputChange('images', images)}
-            maxImages={5}
+            maxImages={10}
           />
         </div>
       </div>

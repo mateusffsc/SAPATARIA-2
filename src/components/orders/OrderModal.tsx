@@ -171,7 +171,20 @@ const OrderModal: React.FC = () => {
   const handleServiceChange = (index: number, field: string, value: any) => {
     const updatedServices = [...orderData.services];
     updatedServices[index] = { ...updatedServices[index], [field]: value };
-    setOrderData(prev => ({ ...prev, services: updatedServices }));
+    
+    // If changing serviceId, update the name and price from the services list
+    if (field === 'serviceId') {
+      const selectedService = services.find(s => s.id.toString() === value);
+      if (selectedService) {
+        updatedServices[index].name = selectedService.name;
+        updatedServices[index].price = selectedService.defaultPrice;
+      }
+    }
+    
+    setOrderData(prev => ({
+      ...prev,
+      services: updatedServices
+    }));
   };
 
   const addService = () => {
@@ -289,6 +302,9 @@ const OrderModal: React.FC = () => {
 
       setSavedOrderNumber(savedOrder.number);
       setShowSuccessActions(true);
+      
+      // Close the modal after successful save
+      setShowModal(false);
     } catch (error) {
       console.error('Error saving order:', error);
       showError('Erro ao salvar ordem de serviço');
@@ -475,6 +491,7 @@ const OrderModal: React.FC = () => {
               label="Modelo"
               value={orderData.model}
               onChange={(value) => handleInputChange('model', value)}
+              field="model"
               suggestions={modelSuggestions}
             />
             <FormInput
@@ -486,6 +503,7 @@ const OrderModal: React.FC = () => {
               label="Tamanho"
               value={orderData.size}
               onChange={(value) => handleInputChange('size', value)}
+              field="size"
               suggestions={sizeSuggestions}
             />
             <FormInput
@@ -543,16 +561,11 @@ const OrderModal: React.FC = () => {
                     label="Serviço"
                     value={service.serviceId}
                     onChange={(value) => {
-                      const selectedService = services.find(s => s.id.toString() === value);
                       handleServiceChange(index, 'serviceId', value);
-                      if (selectedService) {
-                        handleServiceChange(index, 'name', selectedService.name);
-                        handleServiceChange(index, 'price', selectedService.default_price);
-                      }
                     }}
                     options={services.map(s => ({
                       value: s.id.toString(),
-                      label: `${s.name} - ${formatCurrency(s.default_price)}`
+                      label: `${s.name} - ${formatCurrency(s.defaultPrice)}`
                     }))}
                     error={errors[`service.${index}.name`]}
                     placeholder="Selecione um serviço"

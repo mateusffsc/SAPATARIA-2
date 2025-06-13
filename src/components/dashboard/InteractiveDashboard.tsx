@@ -465,10 +465,7 @@ const InteractiveDashboard: React.FC = () => {
             <h4 className="font-medium text-gray-900 mb-2">Indicadores</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span>Taxa de conclusão</span>
-                <span className="font-medium">
-                  {metrics.totalOrders > 0 ? ((metrics.finishedOrders / metrics.totalOrders) * 100).toFixed(1) : '0'}%
-                </span>
+                
               </div>
             </div>
           </div>

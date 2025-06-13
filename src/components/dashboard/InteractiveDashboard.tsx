@@ -440,49 +440,7 @@ const InteractiveDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent activity summary */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Resumo do Período</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-          <div>
-            <h4 className="font-medium text-gray-900 mb-2">Status das OS</h4>
-            <div className="space-y-2">
-              {['serviço pronto', 'em-andamento', 'finalizada'].map(status => {
-                const count = filteredOrders.filter(o => o.status === status).length;
-                const percentage = metrics.totalOrders > 0 ? (count / metrics.totalOrders * 100).toFixed(1) : '0';
-                return (
-                  <div key={status} className="flex justify-between text-sm">
-                    <span className="capitalize">{status.replace('-', ' ')}</span>
-                    <span className="font-medium">{count} ({percentage}%)</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-medium text-gray-900 mb-2">Indicadores</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Taxa de conclusão</span>
-                <span className="font-medium">
-                  {metrics.totalOrders > 0 ? ((metrics.finishedOrders / metrics.totalOrders) * 100).toFixed(1) : '0'}%
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Receita média/OS</span>
-                <span className="font-medium">{formatCurrency(metrics.averageOrderTicket)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Receita média/Venda</span>
-                <span className="font-medium">{formatCurrency(metrics.averageSaleTicket)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+ 
   );
 };
 

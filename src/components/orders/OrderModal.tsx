@@ -171,7 +171,20 @@ const OrderModal: React.FC = () => {
   const handleServiceChange = (index: number, field: string, value: any) => {
     const updatedServices = [...orderData.services];
     updatedServices[index] = { ...updatedServices[index], [field]: value };
-    setOrderData(prev => ({ ...prev, services: updatedServices }));
+    
+    // If changing serviceId, update name and price from the selected service
+    if (field === 'serviceId') {
+      const selectedService = services.find(s => s.id.toString() === value);
+      if (selectedService) {
+        updatedServices[index].name = selectedService.name;
+        updatedServices[index].price = selectedService.defaultPrice;
+      }
+    }
+    
+    setOrderData(prev => ({
+      ...prev,
+      services: updatedServices
+    }));
   };
 
   const addService = () => {
@@ -533,16 +546,11 @@ const OrderModal: React.FC = () => {
                     label="Serviço"
                     value={service.serviceId}
                     onChange={(value) => {
-                      const selectedService = services.find(s => s.id.toString() === value);
                       handleServiceChange(index, 'serviceId', value);
-                      if (selectedService) {
-                        handleServiceChange(index, 'name', selectedService.name);
-                        handleServiceChange(index, 'price', selectedService.default_price);
-                      }
                     }}
                     options={services.map(s => ({
                       value: s.id.toString(),
-                      label: `${s.name} - ${formatCurrency(s.default_price)}`
+                      label: `${s.name} - ${formatCurrency(s.defaultPrice)}`
                     }))}
                     error={errors[`service.${index}.name`]}
                     placeholder="Selecione um serviço"

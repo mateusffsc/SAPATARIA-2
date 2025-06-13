@@ -12,6 +12,7 @@ interface AutocompleteInputProps {
   error?: string;
   className?: string;
   disabled?: boolean;
+  suggestions?: string[];
 }
 
 const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
@@ -23,14 +24,17 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   required = false,
   error,
   className = '',
-  disabled = false
+  disabled = false,
+  suggestions: propSuggestions
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  const suggestions = useAutocomplete(field, value);
+  // Use provided suggestions or fetch from hook
+  const hookSuggestions = useAutocomplete(field, value);
+  const suggestions = propSuggestions || hookSuggestions;
   
   // Load search history from localStorage
   useEffect(() => {
